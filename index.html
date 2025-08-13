@@ -619,27 +619,60 @@
 
     $('#pf').addEventListener('submit', async (e)=>{
       e.preventDefault()
-      const f = Object.fromEntries(new FormData(e.target).entries())
-      const sku = await nextSku()
-      const images = await uploadImages(sku)
-      const doc = {
-        sku,
-        title: f.title,
-        format: f.format,
-        price: Number(f.price||0),
-        stock: Number(f.stock||0),
-        description: f.description||'',
-        youtubeUrl: f.youtubeUrl||'',
-        images,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      const form = e.target
+      const btn = form.querySelector('button[type="submit"], button:not([type])') || form.querySelector('button')
+      const origText = btn ? btn.textContent : ''
+      if (btn) { btn.disabled = true; btn.textContent = 'กำลังบันทึก…' }
+      try {
+        const f = Object.fromEntries(new FormData(form).entries())
+        // sanitize & validate
+        const price = Number(f.price||0); const stock = Number(f.stock||0)
+        if (!f.title) throw new Error('กรอกชื่อเรื่องก่อน')
+        if (!(price>=0)) throw new Error('ราคาต้องเป็นตัวเลข')
+        if (!(stock>=0)) throw new Error('จำนวนต้องเป็นตัวเลข')
+
+        const sku = await nextSku()
+        const images = await uploadImages(sku)
+        const doc = {
+          sku,
+          title: f.title,
+          format: f.format,
+          price,
+          stock,
+          description: f.description||'',
+          youtubeUrl: f.youtubeUrl||'',
+          images,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        }
+        await db.collection('products').doc(sku).set(doc)
+        alert('เพิ่มสินค้าแล้ว • SKU '+sku)
+        form.reset()
+      } catch(err){
+        console.error('Save product error', err)
+        const msg = (err && (err.message||err.code)) || String(err)
+        alert('บันทึกไม่สำเร็จ: '+ msg + '
+
+ถ้าเป็นเรื่องสิทธิ์ ให้ตรวจ Firestore/Storage rules ว่าอนุญาตผู้ใช้ที่ล็อกอินเขียนได้')
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = origText || 'บันทึกสินค้า' }
       }
-      await db.collection('products').doc(sku).set(doc)
-      alert('เพิ่มสินค้าแล้ว • SKU '+sku)
-      e.target.reset()
     })
   }
 
   async function uploadImages(sku){
+    const input = document.getElementById('imgs')
+    const files = Array.from(input?.files||[]).slice(0,4)
+    if (!files.length) return []
+    const urls = []
+    for (const f of files){
+      const ref = storage.ref(`products/${sku}/${Date.now()}_${f.name}`)
+      const snap = await ref.put(f)
+      urls.push(await snap.ref.getDownloadURL())
+    }
+    return urls
+  }
+
+  async function nextSku(){(sku){
     const input = document.getElementById('imgs')
     const files = Array.from(input.files||[]).slice(0,4)
     const urls = []
