@@ -158,16 +158,6 @@
         <a class="relative" href="#/cart" title="ตะกร้า">🛒<span id="cart-count" class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-1 rounded">0</span></a>
         <a id="notify-link" class="hover:underline" href="#/notify">แจ้งชำระเงิน</a>
         <button id="admin-link" class="ml-3 text-xs px-2 py-1 rounded border">Admin</button>
-        <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const adminBtn = document.getElementById('admin-link');
-    if (adminBtn) {
-      adminBtn.addEventListener('click', () => {
-        window.location.href = '#/admin';
-      });
-    }
-  });
-</script>
       </nav>
     </div>
   </header>
@@ -250,13 +240,10 @@
   async function handleRedirectAuth(){
     try {
       const res = await auth.getRedirectResult();
-      if (res && res.user){ 
-  console.log('Redirect sign-in as', res.user.email);
-  window.loggedInUser = res.user; // เก็บสถานะผู้ใช้
-  window.location.hash = '#/admin'; // ไปหน้า admin เลย
-}
+      if (res && res.user){ console.log('Redirect sign-in as', res.user.email); }
     } catch (err){ console.error('Redirect error', err); alert('เข้าสู่ระบบด้วย Redirect ล้มเหลว: '+msgFromErr(err)); }
   }
+
   // Simple hash router
   const routes = {
     '': renderHome,
