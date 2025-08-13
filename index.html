@@ -650,7 +650,7 @@
       } catch(err){
         console.error('Save product error', err)
         const msg = (err && (err.message||err.code)) || String(err)
-        alert('บันทึกไม่สำเร็จ: '+ msg + '
+        alert('บันทึกไม่สำเร็จ: ' + msg + '
 
 ถ้าเป็นเรื่องสิทธิ์ ให้ตรวจ Firestore/Storage rules ว่าอนุญาตผู้ใช้ที่ล็อกอินเขียนได้')
       } finally {
@@ -663,18 +663,6 @@
     const input = document.getElementById('imgs')
     const files = Array.from(input?.files||[]).slice(0,4)
     if (!files.length) return []
-    const urls = []
-    for (const f of files){
-      const ref = storage.ref(`products/${sku}/${Date.now()}_${f.name}`)
-      const snap = await ref.put(f)
-      urls.push(await snap.ref.getDownloadURL())
-    }
-    return urls
-  }
-
-  async function nextSku(){(sku){
-    const input = document.getElementById('imgs')
-    const files = Array.from(input.files||[]).slice(0,4)
     const urls = []
     for (const f of files){
       const ref = storage.ref(`products/${sku}/${Date.now()}_${f.name}`)
