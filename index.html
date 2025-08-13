@@ -241,6 +241,14 @@
     try {
       const res = await auth.getRedirectResult();
       if (res && res.user){ console.log('Redirect sign-in as', res.user.email); }
+// เก็บผู้ใช้ไว้ (กัน onAuthStateChanged ยังไม่เรียกทันที)
+        window.loggedInUser = res.user;
+        // บังคับกลับ Admin เสมอหลัง redirect สำเร็จ
+        if (location.hash !== '#/admin') {
+          location.hash = '#/admin';
+        }
+        return; // กัน render อื่นทับ
+      }
     } catch (err){ console.error('Redirect error', err); alert('เข้าสู่ระบบด้วย Redirect ล้มเหลว: '+msgFromErr(err)); }
   }
 
