@@ -1,14 +1,11 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <!doctype html>
-<html lang="th">
-<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DVD / Blu-ray Shop</title>
+  <title>DVD / Blu‑ray Shop</title>
 
-  <!-- Tailwind (CDN build for simplicity) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -18,16 +15,21 @@
     .soldout-badge { position:absolute; top:8px; left:8px; }
   </style>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
-  <!-- PayPal SDK -->
+  <!-- PayPal SDK (Client ID already filled) -->
   <script src="https://www.paypal.com/sdk/js?client-id=AQrh2CnETHWstFnXpiLnWupeiHX7uR3fG1kx2nxELuQwdwZIvPDVgJX4h9Dv9VQGA6Rc6uIIorFL5rhv&currency=THB"></script>
 
   <script>
+    // ====== CONFIG (edit these) ======
+    const SHIPPING_FEE = 50;
+    const ADMIN_EMAILS = ["artyt.sun@gmail.com"]; // ใส่อีเมล Google ที่จะเข้า Admin ได้
+    const BANK_INFO = { bank: "ธนาคารตัวอย่าง", name: "ชื่อบัญชี ตัวอย่าง", number: "123-4-56789-0" };
+
     // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBgdH-_1hC2Ck3Za5QqaeFVSMQmmR2QyUo",
@@ -38,7 +40,7 @@
       appId: "1:24931876968:web:3144ff90171ba8f887fbdd"
     };
 
-    // Initialize Firebase
+    // Initialize Firebase (global refs)
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
@@ -46,29 +48,6 @@
   </script>
 </head>
 
-<body class="bg-zinc-50 text-zinc-900">
-  <!-- เนื้อหาเดิมของคุณ -->
-</body>
-</html>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DVD / Blu‑ray Shop</title>
-  <!-- Tailwind (CDN build for simplicity) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* basic fade */
-    .fade-enter { opacity: 0; }
-    .fade-enter-active { opacity: 1; transition: opacity .2s; }
-    .soldout-badge { position:absolute; top:8px; left:8px; }
-  </style>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <!-- PayPal (replace YOUR_CLIENT_ID) -->
-  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=THB"></script>
-</head>
 <body class="bg-zinc-50 text-zinc-900">
   <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-zinc-200">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -78,9 +57,7 @@
         <a class="hover:underline" href="#/dvd">DVD</a>
         <a class="hover:underline" href="#/bluray">Blu‑ray</a>
         <a class="hover:underline" href="#/contact">ติดต่อ</a>
-        <a class="relative" href="#/cart" title="ตะกร้า">
-          🛒<span id="cart-count" class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-1 rounded">0</span>
-        </a>
+        <a class="relative" href="#/cart" title="ตะกร้า">🛒<span id="cart-count" class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-1 rounded">0</span></a>
         <a id="notify-link" class="hover:underline" href="#/notify">แจ้งชำระเงิน</a>
         <button id="admin-link" class="ml-3 text-xs px-2 py-1 rounded border">Admin</button>
       </nav>
@@ -97,29 +74,6 @@
 
 <script>
   document.getElementById('y').textContent = new Date().getFullYear()
-
-  // ====== CONFIG (edit these) ======
-  const SHIPPING_FEE = 50;
-  const ADMIN_EMAILS = ["you@example.com"]; // เปลี่ยนอีเมลที่จะเข้าหลังบ้านได้
-  const BANK_INFO = {
-    bank: "ธนาคารตัวอย่าง",
-    name: "ชื่อบัญชี ตัวอย่าง",
-    number: "123-4-56789-0"
-  };
-
-  // Firebase web app config (replace placeholders)
-  const firebaseConfig = {
-  apiKey: "AIzaSyBgdH-_1hC2Ck3Za5QqaeFVSMQmmR2QyUo",
-  authDomain: "dvdbr-shop.firebaseapp.com",
-  projectId: "dvdbr-shop",
-  storageBucket: "dvdbr-shop.appspot.com",
-  messagingSenderId: "24931876968",
-  appId: "1:24931876968:web:3144ff90171ba8f887fbdd",
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  const storage = firebase.storage();
 
   // ====== UTIL ======
   const $ = (sel, el=document)=> el.querySelector(sel)
@@ -140,13 +94,31 @@
   function addToCart(item) {
     const cart = getCart();
     const exists = cart.find(i=>i.sku===item.sku)
-    if (exists) { exists.qty = Math.min(1, (exists.qty||1)); } // สินค้าอย่างละชิ้น จำกัด 1
+    if (exists) { exists.qty = Math.min(1, (exists.qty||1)); } // อย่างละชิ้น จำกัด 1
     else cart.push({...item, qty:1});
     setCart(cart)
     alert('เพิ่มลงตะกร้าแล้ว')
   }
   function updateCartCount(){ $('#cart-count').textContent = getCart().reduce((a,b)=>a+(b.qty||1),0) }
   updateCartCount()
+
+   // ====== THEME (Background) ======
+  async function loadSettings() {
+    try {
+      const doc = await db.collection('meta').doc('settings').get();
+      const s = doc.exists ? doc.data() : {};
+      if (s.bgUrl) applyBackground(s.bgUrl);
+    } catch (e) { console.warn('loadSettings error', e); }
+  }
+
+  function applyBackground(url) {
+    if (!url) return;
+    document.body.style.backgroundImage = `url('${url}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+  }
+</script>
 
   // Simple hash router
   const routes = {
@@ -269,7 +241,6 @@
     const buySku = url.searchParams.get('buy')
     let cart = getCart()
     if (buySku) {
-      // buy single item direct
       const q = await db.collection('products').where('sku','==',buySku).limit(1).get()
       if (!q.empty) {
         const p = q.docs[0].data()
@@ -365,7 +336,7 @@
         await db.collection('orders').doc(id).update({ slipUrl:url, status:'awaiting_verification' })
         alert('อัปโหลดสลิปแล้ว — รอตรวจสอบ')
       })
-      // ไม่ตัดสต็อกทันที รอตรวจสอบ
+      // ไม่ตัดสต๊อกทันที รอตรวจสอบ
       setCart([])
     })
   }
@@ -432,7 +403,7 @@
               <input required name="stock" type="number" placeholder="จำนวนเริ่มต้น (ชิ้น)" class="border rounded px-3 py-2 w-full"/>
               <textarea name="description" placeholder="รายละเอียด" class="border rounded px-3 py-2 w-full"></textarea>
               <input name="youtubeUrl" placeholder="YouTube URL (ถ้ามี)" class="border rounded px-3 py-2 w-full"/>
-              <label class="text-sm">อัปโหลดรูป (สูงสุด 4 รูป)</label>
+              <label class="text.sm">อัปโหลดรูป (สูงสุด 4 รูป)</label>
               <input id="imgs" type="file" multiple accept="image/*" class="w-full"/>
               <button class="mt-2 px-4 py-2 rounded bg-zinc-900 text-white">บันทึกสินค้า</button>
             </form>
@@ -445,7 +416,6 @@
       </div>
     </div>`)
 
-    // auth block
     auth.onAuthStateChanged(user=>{
       const authel = $('#auth')
       if (!user){
@@ -456,8 +426,8 @@
           await auth.signInWithPopup(provider)
         }
       } else {
-        const isAdmin = ADMIN_EMAILS.includes(user.email)
-        authel.innerHTML = `<div class="flex items-center gap-3 text-sm">เข้าสู่ระบบ: ${user.email} ${isAdmin?'<span class=\'text-emerald-600\'>(admin)</span>':'<span class=\'text-red-600\'>(no admin)</span>'} <button id="logout" class="px-2 py-1 border rounded">ออกจากระบบ</button></div>`
+        const isAdmin = ["artyt.sun@gmail.com"].includes(user.email)
+        authel.innerHTML = `<div class="flex items-center gap-3 text-sm">เข้าสู่ระบบ: ${user.email} ${isAdmin?'<span class=\'text-emerald-600\'>(admin)</span>':'<span class=\'text-red-600\'>(no admin)</span>'} <button id=\"logout\" class=\"px-2 py-1 border rounded\">ออกจากระบบ</button></div>`
         $('#logout').onclick = ()=> auth.signOut()
         if (isAdmin){ $('#panel').classList.remove('hidden'); initAdminPanel(); }
       }
@@ -465,7 +435,6 @@
   }
 
   async function initAdminPanel(){
-    // orders feed
     db.collection('orders').orderBy('createdAt','desc').limit(20).onSnapshot(snap=>{
       const list = snap.docs.map(d=>({id:d.id, ...d.data()}))
       $('#orders').innerHTML = list.map(o=>`
@@ -489,7 +458,6 @@
         const status = act==='mark-paid'?'paid_transfer':'ready_to_ship'
         await db.collection('orders').doc(id).update({ status })
         if (act==='mark-paid'){
-          // cut stock here for transfer method after verify
           const oDoc = await db.collection('orders').doc(id).get()
           const o = oDoc.data()
           await decrementStocks(o.items)
@@ -498,7 +466,520 @@
       }))
     })
 
-    // product form
+    $('#pf').addEventListener('submit', async (e)=>{
+      e.preventDefault()
+      const f = Object.fromEntries(new FormData(e.target).entries())
+      const sku = await nextSku()
+      const images = await uploadImages(sku)
+      const doc = {
+        sku,
+        title: f.title,
+        format: f.format,
+        price: Number(f.price||0),
+        stock: Number(f.stock||0),
+        description: f.description||'',
+        youtubeUrl: f.youtubeUrl||'',
+        images,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }
+      await db.collection('products').doc(sku).set(doc)
+      alert('เพิ่มสินค้าแล้ว • SKU '+sku)
+      e.target.reset()
+    })
+  }
+
+  async function uploadImages(sku){
+    const input = document.getElementById('imgs')
+    const files = Array.from(input.files||[]).slice(0,4)
+    const urls = []
+    for (const f of files){
+      const ref = storage.ref(`products/${sku}/${Date.now()}_${f.name}`)
+      const snap = await ref.put(f)
+      urls.push(await snap.ref.getDownloadURL())
+    }
+    return urls
+  }
+
+  async function nextSku(){
+    const ref = db.collection('meta').doc('sku')
+    await db.runTransaction(async (tx)=>{
+      const doc = await tx.get(ref)
+      const cur = doc.exists ? (doc.data().seq||1000) : 1000
+      tx.set(ref, { seq: cur+1 })
+    })
+    const doc = await ref.get();
+    return 'SKU'+String(doc.data().seq).padStart(5,'0')
+  }
+</script>
+</body>
+</html><!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DVD / Blu‑ray Shop</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* basic fade */
+    .fade-enter { opacity: 0; }
+    .fade-enter-active { opacity: 1; transition: opacity .2s; }
+    .soldout-badge { position:absolute; top:8px; left:8px; }
+  </style>
+
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+  <!-- PayPal SDK (Client ID already filled) -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AQrh2CnETHWstFnXpiLnWupeiHX7uR3fG1kx2nxELuQwdwZIvPDVgJX4h9Dv9VQGA6Rc6uIIorFL5rhv&currency=THB"></script>
+
+  <script>
+    // ====== CONFIG (edit these) ======
+    const SHIPPING_FEE = 50;
+    const ADMIN_EMAILS = ["artyt.sun@gmail.com"]; // ใส่อีเมล Google ที่จะเข้า Admin ได้
+    const BANK_INFO = { bank: "ธนาคารตัวอย่าง", name: "ชื่อบัญชี ตัวอย่าง", number: "123-4-56789-0" };
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgdH-_1hC2Ck3Za5QqaeFVSMQmmR2QyUo",
+      authDomain: "dvdbr-shop.firebaseapp.com",
+      projectId: "dvdbr-shop",
+      storageBucket: "dvdbr-shop.appspot.com",
+      messagingSenderId: "24931876968",
+      appId: "1:24931876968:web:3144ff90171ba8f887fbdd"
+    };
+
+    // Initialize Firebase (global refs)
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+  </script>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-zinc-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="#/" class="font-semibold tracking-tight">🎬 DVDBR Shop</a>
+      <nav class="flex items-center gap-3 text-sm">
+        <a class="hover:underline" href="#/">หน้าหลัก</a>
+        <a class="hover:underline" href="#/dvd">DVD</a>
+        <a class="hover:underline" href="#/bluray">Blu‑ray</a>
+        <a class="hover:underline" href="#/contact">ติดต่อ</a>
+        <a class="relative" href="#/cart" title="ตะกร้า">🛒<span id="cart-count" class="absolute -top-2 -right-2 bg-zinc-900 text-white text-[10px] px-1 rounded">0</span></a>
+        <a id="notify-link" class="hover:underline" href="#/notify">แจ้งชำระเงิน</a>
+        <button id="admin-link" class="ml-3 text-xs px-2 py-1 rounded border">Admin</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <div id="view"></div>
+  </main>
+
+  <footer class="border-t border-zinc-200 py-6 text-center text-xs text-zinc-500">
+    © <span id="y"></span> DVDBR Shop — GitHub Pages + Firebase
+  </footer>
+
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear()
+
+  // ====== UTIL ======
+  const $ = (sel, el=document)=> el.querySelector(sel)
+  const $$ = (sel, el=document)=> Array.from(el.querySelectorAll(sel))
+  const fmt = n => Number(n).toLocaleString('th-TH')
+  const uuid = () => Math.random().toString(36).slice(2)+Date.now().toString(36)
+
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    const m = url.match(/(?:youtu\.be\/|v=|\/embed\/)([\w-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  // local cart
+  const CART_KEY = 'dvdbr_cart_v1'
+  function getCart() { return JSON.parse(localStorage.getItem(CART_KEY)||'[]') }
+  function setCart(items) { localStorage.setItem(CART_KEY, JSON.stringify(items)); updateCartCount(); }
+  function addToCart(item) {
+    const cart = getCart();
+    const exists = cart.find(i=>i.sku===item.sku)
+    if (exists) { exists.qty = Math.min(1, (exists.qty||1)); } // อย่างละชิ้น จำกัด 1
+    else cart.push({...item, qty:1});
+    setCart(cart)
+    alert('เพิ่มลงตะกร้าแล้ว')
+  }
+  function updateCartCount(){ $('#cart-count').textContent = getCart().reduce((a,b)=>a+(b.qty||1),0) }
+  updateCartCount()
+
+   // ====== THEME (Background) ======
+  async function loadSettings() {
+    try {
+      const doc = await db.collection('meta').doc('settings').get();
+      const s = doc.exists ? doc.data() : {};
+      if (s.bgUrl) applyBackground(s.bgUrl);
+    } catch (e) { console.warn('loadSettings error', e); }
+  }
+
+  function applyBackground(url) {
+    if (!url) return;
+    document.body.style.backgroundImage = `url('${url}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+  }
+</script>
+
+  // Simple hash router
+  const routes = {
+    '': renderHome,
+    '#/': renderHome,
+    '#/dvd': () => renderCatalog('DVD'),
+    '#/bluray': () => renderCatalog('Blu-ray'),
+    '#/product': renderProduct,
+    '#/cart': renderCart,
+    '#/checkout': renderCheckout,
+    '#/notify': renderNotify,
+    '#/contact': renderContact,
+    '#/admin': renderAdmin,
+  }
+  window.addEventListener('hashchange', router)
+  window.addEventListener('load', router)
+
+  async function router(){
+    const hash = location.hash.split('?')[0]
+    const fn = routes[hash] || renderHome
+    await fn()
+  }
+
+  function view(html){
+    const el = document.getElementById('view');
+    el.innerHTML = html
+  }
+
+  // ====== DATA SHAPES ======
+  // product: { sku, title, format: 'DVD'|'Blu-ray', price, stock, images:[url], youtubeUrl, description, createdAt }
+  // order: { id, items:[{sku,title,price,qty}], subtotal, shipping, total, name,address,phone,email, method:'paypal'|'transfer', status, slipUrl?, createdAt }
+
+  // ====== VIEWS ======
+  async function renderHome(){
+    const latest = await db.collection('products').orderBy('createdAt','desc').limit(8).get()
+    const items = latest.docs.map(d=>({id:d.id, ...d.data()}))
+    view(`<h1 class="text-xl font-semibold mb-4">รายการล่าสุด</h1>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items.map(card).join('')}</div>`)
+  }
+
+  async function renderCatalog(format){
+    const snap = await db.collection('products').where('format','==',format).orderBy('createdAt','desc').get()
+    const items = snap.docs.map(d=>({id:d.id, ...d.data()}))
+    view(`<h1 class="text-xl font-semibold mb-4">${format}</h1>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items.map(card).join('')}</div>`)
+  }
+
+  function card(p){
+    const img = (p.images&&p.images[0]) || 'https://placehold.co/600x800?text=No+Image'
+    const sold = p.stock<=0
+    return `<a href="#/product?sku=${encodeURIComponent(p.sku)}" class="block border rounded-xl overflow-hidden bg-white relative">
+      ${sold?`<span class="soldout-badge bg-red-600 text-white text-[10px] px-2 py-1 rounded">SOLD OUT</span>`:''}
+      <div class="aspect-[3/4] bg-zinc-100 overflow-hidden"><img src="${img}" alt="${p.title}" class="w-full h-full object-cover"/></div>
+      <div class="p-3">
+        <div class="text-sm text-zinc-500">${p.format}</div>
+        <div class="font-medium line-clamp-2">${p.title}</div>
+        <div class="mt-1">฿${fmt(p.price)}</div>
+      </div>
+    </a>`
+  }
+
+  async function renderProduct(){
+    const url = new URL(location.href)
+    const sku = url.searchParams.get('sku')
+    const q = await db.collection('products').where('sku','==',sku).limit(1).get()
+    if (q.empty) { view('<p>ไม่พบสินค้า</p>'); return }
+    const p = q.docs[0].data()
+    const yt = extractYouTubeId(p.youtubeUrl)
+    const canBuy = p.stock>0
+
+    view(`<div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <div class="grid grid-cols-3 gap-2">
+          ${(p.images||[]).slice(0,4).map(u=>`<img src="${u}" class="w-full aspect-square object-cover rounded"/>`).join('')}
+        </div>
+        ${yt?`<div class="mt-4 aspect-video"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${yt}" allowfullscreen></iframe></div>`:''}
+      </div>
+      <div>
+        <div class="text-sm text-zinc-500">${p.format} • SKU ${p.sku}</div>
+        <h1 class="text-2xl font-semibold mt-1">${p.title}</h1>
+        <div class="text-xl mt-2">฿${fmt(p.price)}</div>
+        <div class="mt-2 ${canBuy? 'text-emerald-600':'text-red-600'}">${canBuy?`มีสินค้า ${p.stock} ชิ้น`:'สินค้าหมด'}</div>
+        <div class="prose prose-zinc max-w-none mt-4">${(p.description||'').replace(/\n/g,'<br>')}</div>
+        <div class="mt-6 flex items-center gap-3">
+          <button ${canBuy?'':'disabled'} class="px-4 py-2 rounded bg-zinc-900 text-white disabled:opacity-40" id="add">Add to cart</button>
+          <a ${canBuy?'':'aria-disabled'} href="${canBuy?'#/checkout?buy='+encodeURIComponent(p.sku):'#'}" class="px-4 py-2 rounded border">สั่งชิ้นนี้ทันที</a>
+        </div>
+      </div>
+    </div>`)
+
+    $('#add')?.addEventListener('click',()=>{
+      addToCart({ sku:p.sku, title:p.title, price:p.price, format:p.format })
+    })
+  }
+
+  function renderCart(){
+    const cart = getCart()
+    if (!cart.length) { view('<p>ตะกร้าว่าง</p>'); return }
+    const subtotal = cart.reduce((a,b)=>a+b.price*(b.qty||1),0)
+    view(`<h1 class="text-xl font-semibold mb-4">ตะกร้าสินค้า</h1>
+      <div class="space-y-3">${cart.map(i=>`
+        <div class="flex items-center justify-between border rounded p-3">
+          <div>
+            <div class="text-sm text-zinc-500">${i.format} • ${i.sku}</div>
+            <div class="font-medium">${i.title}</div>
+          </div>
+          <div>฿${fmt(i.price)}</div>
+        </div>`).join('')}
+      </div>
+      <div class="mt-4 flex justify-between text-sm"><span>ยอดรวม</span><span>฿${fmt(subtotal)}</span></div>
+      <div class="mt-1 flex justify-between text-sm"><span>ค่าส่ง</span><span>฿${fmt(SHIPPING_FEE)}</span></div>
+      <div class="mt-2 flex justify-between font-semibold"><span>Total</span><span>฿${fmt(subtotal+SHIPPING_FEE)}</span></div>
+      <div class="mt-4">
+        <a href="#/checkout" class="px-4 py-2 rounded bg-zinc-900 text-white">ไปชำระเงิน</a>
+      </div>`)
+  }
+
+  async function renderCheckout(){
+    const url = new URL(location.href)
+    const buySku = url.searchParams.get('buy')
+    let cart = getCart()
+    if (buySku) {
+      const q = await db.collection('products').where('sku','==',buySku).limit(1).get()
+      if (!q.empty) {
+        const p = q.docs[0].data()
+        cart = [{ sku:p.sku, title:p.title, price:p.price, format:p.format, qty:1 }]
+      }
+    }
+    if (!cart.length){ view('<p>ไม่มีสินค้าในคำสั่งซื้อ</p>'); return }
+    const subtotal = cart.reduce((a,b)=>a+b.price*(b.qty||1),0)
+    const total = subtotal + SHIPPING_FEE
+
+    view(`<h1 class="text-xl font-semibold mb-4">ชำระเงิน</h1>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="md:col-span-2">
+          <div class="border rounded p-4">
+            <h2 class="font-medium">วิธีชำระ</h2>
+            <div class="mt-3 flex gap-3">
+              <button id="pay-paypal" class="px-3 py-2 border rounded">PayPal</button>
+              <button id="pay-transfer" class="px-3 py-2 border rounded">โอนเงิน</button>
+            </div>
+            <div id="pay-area" class="mt-4"></div>
+          </div>
+        </div>
+        <div class="border rounded p-4 h-fit">
+          <div class="font-medium">สรุปคำสั่งซื้อ</div>
+          <div class="mt-2 text-sm space-y-1">
+            ${cart.map(i=>`<div class="flex justify-between"><span>${i.title}</span><span>฿${fmt(i.price)}</span></div>`).join('')}
+            <div class="flex justify-between"><span>ค่าส่ง</span><span>฿${fmt(SHIPPING_FEE)}</span></div>
+            <div class="flex justify-between font-semibold"><span>Total</span><span>฿${fmt(total)}</span></div>
+          </div>
+        </div>
+      </div>`)
+
+    $('#pay-paypal').addEventListener('click', ()=>
+      showPaypal(cart, subtotal, total)
+    )
+    $('#pay-transfer').addEventListener('click', ()=>
+      showTransfer(cart, subtotal, total)
+    )
+  }
+
+  function showPaypal(cart, subtotal, total){
+    const el = $('#pay-area');
+    el.innerHTML = `<div id="paypal-buttons"></div>`
+    if (!window.paypal){ el.innerHTML = '<p class="text-red-600">โหลด PayPal SDK ไม่สำเร็จ</p>'; return }
+    paypal.Buttons({
+      createOrder: (_, actions) => actions.order.create({ purchase_units:[{ amount:{ value: total.toFixed(2) } }] }),
+      onApprove: async (_, actions) => {
+        const details = await actions.order.capture();
+        const orderId = details.id || uuid();
+        await saveOrder({ id:orderId, items:cart, subtotal, shipping:SHIPPING_FEE, total, method:'paypal', status:'paid_paypal' })
+        await decrementStocks(cart)
+        setCart([])
+        location.hash = '#/thankyou'
+        alert('ชำระเงินสำเร็จ — หมายเลขคำสั่งซื้อ: '+orderId)
+      },
+      onError: (err)=> alert('เกิดข้อผิดพลาด PayPal: '+err)
+    }).render('#paypal-buttons');
+  }
+
+  function showTransfer(cart, subtotal, total){
+    const el = $('#pay-area');
+    el.innerHTML = `<div class="space-y-3">
+      <div class="text-sm">เมื่อกด Confirm จะสรุปราคารวมค่าส่ง ฿${fmt(SHIPPING_FEE)} = <b>฿${fmt(total)}</b> และแสดงเลขบัญชีเพื่อโอน</div>
+      <form id="tf" class="grid grid-cols-1 gap-3">
+        <input required name="name" placeholder="ชื่อ-นามสกุล" class="border rounded px-3 py-2"/>
+        <textarea required name="address" placeholder="ที่อยู่จัดส่ง" class="border rounded px-3 py-2"></textarea>
+        <input required name="phone" placeholder="เบอร์โทร" class="border rounded px-3 py-2"/>
+        <input required type="email" name="email" placeholder="อีเมล" class="border rounded px-3 py-2"/>
+        <button class="px-3 py-2 rounded bg-zinc-900 text-white w-fit">Confirm</button>
+      </form>
+      <div id="after"></div>
+    </div>`
+    $('#tf').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(e.target).entries())
+      const id = 'TF-'+uuid()
+      await saveOrder({ id, items:cart, subtotal, shipping:SHIPPING_FEE, total, method:'transfer', status:'awaiting_transfer', ...f })
+      $('#after').innerHTML = `<div class="border rounded p-3">
+        <div class="font-medium">ยอดโอนรวม: ฿${fmt(total)}</div>
+        <div class="mt-2 text-sm">โอนเข้าบัญชี: <b>${BANK_INFO.bank}</b> / ${BANK_INFO.name} / ${BANK_INFO.number}</div>
+        <div class="mt-3">
+          <label class="text-sm">อัปโหลดสลิปโอนเงิน (ถ้ามีตอนนี้)</label>
+          <input id="slip" type="file" accept="image/*" class="block mt-1" />
+          <button id="uploadSlip" class="mt-2 px-3 py-2 rounded border">อัปโหลดสลิป</button>
+        </div>
+        <div class="mt-3 text-xs text-zinc-500">หากปิดหน้านี้ สามารถกลับมาอัปโหลดได้ที่เมนู “แจ้งชำระเงิน” พร้อมใส่หมายเลขคำสั่งซื้อ: <b>${id}</b></div>
+      </div>`
+      $('#uploadSlip').addEventListener('click', async ()=>{
+        const file = $('#slip').files[0]; if (!file) return alert('เลือกไฟล์ก่อน')
+        const ref = storage.ref('slips/'+id+'/'+file.name)
+        const snap = await ref.put(file)
+        const url = await snap.ref.getDownloadURL()
+        await db.collection('orders').doc(id).update({ slipUrl:url, status:'awaiting_verification' })
+        alert('อัปโหลดสลิปแล้ว — รอตรวจสอบ')
+      })
+      // ไม่ตัดสต๊อกทันที รอตรวจสอบ
+      setCart([])
+    })
+  }
+
+  async function saveOrder(order){
+    order.createdAt = firebase.firestore.FieldValue.serverTimestamp()
+    await db.collection('orders').doc(order.id).set(order)
+  }
+  async function decrementStocks(items){
+    const batch = db.batch()
+    for (const it of items){
+      const qs = await db.collection('products').where('sku','==',it.sku).limit(1).get()
+      if (!qs.empty){
+        const ref = qs.docs[0].ref
+        batch.update(ref, { stock: firebase.firestore.FieldValue.increment(-1) })
+      }
+    }
+    await batch.commit()
+  }
+
+  function renderNotify(){
+    view(`<h1 class="text-xl font-semibold mb-4">แจ้งชำระเงิน (กรณีโอนเงิน)</h1>
+      <form id="nf" class="max-w-md space-y-3">
+        <input required name="id" placeholder="หมายเลขคำสั่งซื้อ (เช่น TF-xxxx)" class="border rounded px-3 py-2 w-full"/>
+        <input required type="file" id="slip2" accept="image/*" class="w-full"/>
+        <button class="px-4 py-2 rounded bg-zinc-900 text-white">อัปโหลดสลิป</button>
+      </form>`)
+    $('#nf').addEventListener('submit', async (e)=>{
+      e.preventDefault()
+      const id = new FormData(e.target).get('id')
+      const file = $('#slip2').files[0]; if (!file) return alert('แนบไฟล์ก่อน')
+      const ref = storage.ref('slips/'+id+'/'+file.name)
+      const snap = await ref.put(file)
+      const url = await snap.ref.getDownloadURL()
+      await db.collection('orders').doc(id).update({ slipUrl:url, status:'awaiting_verification' })
+      alert('อัปโหลดสลิปแล้ว — รอตรวจสอบ')
+    })
+  }
+
+  function renderContact(){
+    view(`<div class="prose prose-zinc max-w-none">
+      <h1>ติดต่อ</h1>
+      <p>อีเมล: you@example.com<br>LINE: @yourline</p>
+    </div>`)
+  }
+
+  // ====== ADMIN ======
+  $('#admin-link').addEventListener('click', ()=> location.hash = '#/admin')
+
+  async function renderAdmin(){
+    view(`<div id="admin">
+      <h1 class="text-xl font-semibold mb-4">หลังบ้าน</h1>
+      <div id="auth"></div>
+      <div id="panel" class="hidden">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="border rounded p-4">
+            <h2 class="font-medium mb-2">เพิ่มสินค้าใหม่</h2>
+            <form id="pf" class="space-y-2">
+              <input required name="title" placeholder="ชื่อเรื่อง" class="border rounded px-3 py-2 w-full"/>
+              <select name="format" class="border rounded px-3 py-2 w-full">
+                <option>DVD</option><option>Blu-ray</option>
+              </select>
+              <input required name="price" type="number" placeholder="ราคา" class="border rounded px-3 py-2 w-full"/>
+              <input required name="stock" type="number" placeholder="จำนวนเริ่มต้น (ชิ้น)" class="border rounded px-3 py-2 w-full"/>
+              <textarea name="description" placeholder="รายละเอียด" class="border rounded px-3 py-2 w-full"></textarea>
+              <input name="youtubeUrl" placeholder="YouTube URL (ถ้ามี)" class="border rounded px-3 py-2 w-full"/>
+              <label class="text.sm">อัปโหลดรูป (สูงสุด 4 รูป)</label>
+              <input id="imgs" type="file" multiple accept="image/*" class="w-full"/>
+              <button class="mt-2 px-4 py-2 rounded bg-zinc-900 text-white">บันทึกสินค้า</button>
+            </form>
+          </div>
+          <div class="border rounded p-4">
+            <h2 class="font-medium mb-2">ออเดอร์ล่าสุด</h2>
+            <div id="orders" class="space-y-3 text-sm"></div>
+          </div>
+        </div>
+      </div>
+    </div>`)
+
+    auth.onAuthStateChanged(user=>{
+      const authel = $('#auth')
+      if (!user){
+        authel.innerHTML = `<button id="signin" class="px-3 py-2 border rounded">เข้าสู่ระบบด้วย Google</button>`
+        $('#panel').classList.add('hidden')
+        $('#signin').onclick = async ()=>{
+          const provider = new firebase.auth.GoogleAuthProvider();
+          await auth.signInWithPopup(provider)
+        }
+      } else {
+        const isAdmin = ["artyt.sun@gmail.com"].includes(user.email)
+        authel.innerHTML = `<div class="flex items-center gap-3 text-sm">เข้าสู่ระบบ: ${user.email} ${isAdmin?'<span class=\'text-emerald-600\'>(admin)</span>':'<span class=\'text-red-600\'>(no admin)</span>'} <button id=\"logout\" class=\"px-2 py-1 border rounded\">ออกจากระบบ</button></div>`
+        $('#logout').onclick = ()=> auth.signOut()
+        if (isAdmin){ $('#panel').classList.remove('hidden'); initAdminPanel(); }
+      }
+    })
+  }
+
+  async function initAdminPanel(){
+    db.collection('orders').orderBy('createdAt','desc').limit(20).onSnapshot(snap=>{
+      const list = snap.docs.map(d=>({id:d.id, ...d.data()}))
+      $('#orders').innerHTML = list.map(o=>`
+        <div class="border rounded p-3">
+          <div class="flex justify-between">
+            <div><b>${o.id}</b> • ${o.method} • <span class="${o.status.includes('await')?'text-amber-600':o.status.includes('paid')?'text-emerald-600':'text-zinc-700'}">${o.status}</span></div>
+            <div>฿${fmt(o.total)}</div>
+          </div>
+          <div class="mt-1">${o.items.map(i=>i.title+' ('+i.sku+')').join(', ')}</div>
+          ${o.name?`<div class="mt-1 text-xs">${o.name} • ${o.phone} • ${o.email}<br>${(o.address||'').replace(/\n/g,' ')}</div>`:''}
+          ${o.slipUrl?`<div class="mt-1"><a class="text-blue-600 underline" href="${o.slipUrl}" target="_blank">ดูสลิป</a></div>`:''}
+          <div class="mt-2 flex gap-2">
+            <button data-id="${o.id}" data-act="mark-paid" class="px-2 py-1 border rounded">มาร์คชำระแล้ว</button>
+            <button data-id="${o.id}" data-act="ready" class="px-2 py-1 border rounded">พร้อมส่ง</button>
+          </div>
+        </div>
+      `).join('')
+      $$('#orders [data-act]').forEach(btn=>btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.id
+        const act = btn.dataset.act
+        const status = act==='mark-paid'?'paid_transfer':'ready_to_ship'
+        await db.collection('orders').doc(id).update({ status })
+        if (act==='mark-paid'){
+          const oDoc = await db.collection('orders').doc(id).get()
+          const o = oDoc.data()
+          await decrementStocks(o.items)
+        }
+        alert('อัปเดตสถานะแล้ว: '+status)
+      }))
+    })
+
     $('#pf').addEventListener('submit', async (e)=>{
       e.preventDefault()
       const f = Object.fromEntries(new FormData(e.target).entries())
