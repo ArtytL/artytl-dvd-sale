@@ -650,9 +650,9 @@
       } catch(err){
         console.error('Save product error', err)
         const msg = (err && (err.message||err.code)) || String(err)
-        alert('บันทึกไม่สำเร็จ: ' + msg + '
+        alert(`บันทึกไม่สำเร็จ: ${msg}
 
-ถ้าเป็นเรื่องสิทธิ์ ให้ตรวจ Firestore/Storage rules ว่าอนุญาตผู้ใช้ที่ล็อกอินเขียนได้');
+ถ้าเป็นเรื่องสิทธิ์ ให้ตรวจ Firestore/Storage rules ว่าอนุญาตผู้ใช้ที่ล็อกอินเขียนได้`);
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = origText || 'บันทึกสินค้า' }
       }
