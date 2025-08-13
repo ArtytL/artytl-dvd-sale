@@ -240,16 +240,18 @@
   async function handleRedirectAuth(){
     try {
       const res = await auth.getRedirectResult();
-      if (res && res.user){ console.log('Redirect sign-in as', res.user.email); }
-// เก็บผู้ใช้ไว้ (กัน onAuthStateChanged ยังไม่เรียกทันที)
+      if (res && res.user){
+        console.log('Redirect sign-in as', res.user.email);
         window.loggedInUser = res.user;
-        // บังคับกลับ Admin เสมอหลัง redirect สำเร็จ
+        // ไปหน้า admin ทันที; ถ้าอยู่หน้าเดิมอยู่แล้ว ให้บังคับ render อีกรอบ
         if (location.hash !== '#/admin') {
           location.hash = '#/admin';
+        } else {
+          setTimeout(renderAdmin, 0);
         }
-        return; // กัน render อื่นทับ
       }
-    } catch (err){ console.error('Redirect error', err); alert('เข้าสู่ระบบด้วย Redirect ล้มเหลว: '+msgFromErr(err)); }
+    } catch (err){
+      console.error('Redirect error', err); alert('เข้าสู่ระบบด้วย Redirect ล้มเหลว: '+msgFromErr(err)); }
   }
 
   // Simple hash router
@@ -530,7 +532,14 @@
   }
 
   // ====== ADMIN ======
-  $('#admin-link').addEventListener('click', ()=> location.hash = '#/admin')
+  $('#admin-link').addEventListener('click', ()=> {
+    if (location.hash !== '#/admin') {
+      location.hash = '#/admin';
+    } else {
+      // ถ้ากำลังอยู่หน้า admin แล้ว (ไม่มี hashchange) ให้ render ใหม่ทันที
+      renderAdmin();
+    }
+  })
 
   async function renderAdmin(){
     view(`<div id="admin">
