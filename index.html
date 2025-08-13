@@ -350,36 +350,55 @@
     </a>`
   }
 
-  async function renderProduct(){
+async function renderProduct(){
     const params = hashParams();
     const sku = params.get('sku');
-    if (!sku){ view('<p>ไม่พบสินค้า</p>'); return }
-    const q = await db.collection('products').where('sku','==',sku).limit(1).get()
-    if (q.empty) { view('<p>ไม่พบสินค้า</p>'); return }
-    const p = q.docs[0].data()
-    const yt = extractYouTubeId(p.youtubeUrl)
-    const canBuy = p.stock>0
+    if (!sku){ 
+        view('<p>ไม่พบสินค้า</p>'); 
+        return; 
+    }
+    const q = await db.collection('products').where('sku','==',sku).limit(1).get();
+    if (q.empty) { 
+        view('<p>ไม่พบสินค้า</p>'); 
+        return; 
+    }
+    const p = q.docs[0].data();
+    const yt = extractYouTubeId(p.youtubeUrl);
+    const canBuy = p.stock > 0;
 
-    view(`<div class="grid md:grid-cols-2 gap-6">
-      <div>
-        <div class="grid grid-cols-3 gap-2">
-          ${(p.images||[]).slice(0,4).map(u=>`<img src="${u}" class="w-full aspect-square object-cover rounded"/>`).join('')}
+    view(`
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-3 gap-2">
+                ${(p.images || []).slice(0,4).map(u => `<img src="${u}" class="w-full aspect-square object-cover rounded"/>`).join('')}
+            </div>
+            ${yt ? `<div class="mt-4 aspect-video"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${yt}" allowfullscreen></iframe></div>` : ''}
+            <div>
+                <div class="text-sm text-zinc-500">${p.format} • SKU ${p.sku}</div>
+                <h1 class="text-2xl font-semibold mt-1">${p.title}</h1>
+                <div class="text-xl mt-2">฿${fmt(p.price)}</div>
+                <div class="mt-2 ${canBuy ? 'text-emerald-600' : 'text-red-600'}">
+                    ${canBuy ? `มีสินค้า ${p.stock} ชิ้น` : 'สินค้าหมด'}
+                </div>
+                <div class="prose prose-zinc max-w-none mt-4">
+                    ${(p.description || '').replace(/\n/g,'<br/>')}
+                </div>
+                <div class="mt-6 flex items-center gap-3">
+                    <button ${canBuy ? '' : 'disabled'} class="px-4 py-2 rounded bg-zinc-900 text-white disabled:opacity-40" id="add">Add to cart</button>
+                    <a ${canBuy ? '' : 'aria-disabled'} href="${canBuy ? `#/checkout?buy=`+encodeURIComponent(p.sku) : '#'}" class="px-4 py-2 rounded border">สั่งซื้อต้นทันที</a>
+                </div>
+            </div>
         </div>
-        ${yt?`<div class="mt-4 aspect-video"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${yt}" allowfullscreen></iframe></div>`:''}
-      </div>
-      <div>
-        <div class="text-sm text-zinc-500">${p.format} • SKU ${p.sku}</div>
-        <h1 class="text-2xl font-semibold mt-1">${p.title}</h1>
-        <div class="text-xl mt-2">฿${fmt(p.price)}</div>
-        <div class="mt-2 ${canBuy? 'text-emerald-600':'text-red-600'}">${canBuy?`มีสินค้า ${p.stock} ชิ้น`:'สินค้าหมด'}</div>
-        <div class="prose prose-zinc max-w-none mt-4">${(p.description||'').replace(/\n/g, '<br/>')
-}</div>
-        <div class="mt-6 flex items-center gap-3">
-          <button ${canBuy?'':'disabled'} class="px-4 py-2 rounded bg-zinc-900 text-white disabled:opacity-40" id="add">Add to cart</button>
-          <a ${canBuy?'':'aria-disabled'} href="${canBuy?'#/checkout?buy='+encodeURIComponent(p.sku):'#'}" class="px-4 py-2 rounded border">สั่งชิ้นนี้ทันที</a>
-        </div>
-      </div>
-    </div>`)
+    `);
+
+    document.querySelector('#add')?.addEventListener('click', () => {
+        addToCart({ 
+            sku: p.sku, 
+            title: p.title, 
+            price: p.price, 
+            format: p.format 
+        });
+    });
+}
 
     $('#add')?.addEventListener('click',()=>{
       addToCart({ sku:p.sku, title:p.title, price:p.price, format:p.format })
