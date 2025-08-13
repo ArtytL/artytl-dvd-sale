@@ -250,7 +250,11 @@
   async function handleRedirectAuth(){
     try {
       const res = await auth.getRedirectResult();
-      if (res && res.user){ console.log('Redirect sign-in as', res.user.email); }
+      if (res && res.user){ 
+  console.log('Redirect sign-in as', res.user.email);
+  window.loggedInUser = res.user; // เก็บสถานะผู้ใช้
+  window.location.hash = '#/admin'; // ไปหน้า admin เลย
+}
     } catch (err){ console.error('Redirect error', err); alert('เข้าสู่ระบบด้วย Redirect ล้มเหลว: '+msgFromErr(err)); }
   }
   // Simple hash router
