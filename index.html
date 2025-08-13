@@ -1,6 +1,55 @@
 <!doctype html>
 <html lang="th">
 <head>
+  <!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DVD / Blu-ray Shop</title>
+
+  <!-- Tailwind (CDN build for simplicity) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* basic fade */
+    .fade-enter { opacity: 0; }
+    .fade-enter-active { opacity: 1; transition: opacity .2s; }
+    .soldout-badge { position:absolute; top:8px; left:8px; }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+  <!-- PayPal SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=THB"></script>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgdH-_1hC2Ck3Za5QqaeFVSMQmmR2QyUo",
+      authDomain: "dvdbr-shop.firebaseapp.com",
+      projectId: "dvdbr-shop",
+      storageBucket: "dvdbr-shop.appspot.com",
+      messagingSenderId: "24931876968",
+      appId: "1:24931876968:web:3144ff90171ba8f887fbdd"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+  </script>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+  <!-- เนื้อหาเดิมของคุณ -->
+</body>
+</html>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DVD / Blu‑ray Shop</title>
@@ -60,12 +109,12 @@
 
   // Firebase web app config (replace placeholders)
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef",
+  apiKey: "AIzaSyBgdH-_1hC2Ck3Za5QqaeFVSMQmmR2QyUo",
+  authDomain: "dvdbr-shop.firebaseapp.com",
+  projectId: "dvdbr-shop",
+  storageBucket: "dvdbr-shop.appspot.com",
+  messagingSenderId: "24931876968",
+  appId: "1:24931876968:web:3144ff90171ba8f887fbdd",
   };
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
