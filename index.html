@@ -6,21 +6,44 @@
   <title>Mini Shop – Email Login (Local only)</title>
   <style>
     :root{--bg:#0b0b0c;--card:#141417;--muted:#8b90a1;--text:#e9ecf1;--accent:#86e1ff;--accent2:#a1ffb2;--danger:#ff7a7a}
-    *{box-sizing:border-box}body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;background:linear-gradient(180deg,#0a0a0a,#111217 60%);color:var(--text)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;background:linear-gradient(180deg,#0a0a0a,#111217 60%);color:var(--text)}
     header{position:sticky;top:0;z-index:40;background:rgba(12,12,14,.65);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid #222}
-    .wrap{max-width:1000px;margin:0 auto;padding:18px 16px}.row{display:flex;gap:12px;align-items:center;justify-content:space-between}
-    a{color:var(--accent)}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#1c1d22;border:1px solid #2a2c35;color:#cbd5e1;text-decoration:none}
-    main{padding:28px 16px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .wrap{max-width:1000px;margin:0 auto;padding:18px 16px}
+    .row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    a{color:var(--accent)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#1c1d22;border:1px solid #2a2c35;color:#cbd5e1;text-decoration:none}
+    main{padding:28px 16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
     .card{background:var(--card);border:1px solid #21222a;border-radius:16px;overflow:hidden}
-    .card img{width:100%;height:180px;object-fit:cover;background:#0f1013}
-    .p{padding:12px 14px}.name{font-weight:700}.price{color:var(--accent2);font-weight:700}.muted{color:var(--muted)}
+    .card img{width:100%;aspect-ratio:2/3;object-fit:cover;background:#0f1013;display:block}
+    .dvd{width:100%;aspect-ratio:2/3;object-fit:cover;background:#0f1013;display:block}
+    .embed16x9{width:100%;aspect-ratio:16/9;border:1px solid #24262e;border-radius:12px}
+    .p{padding:12px 14px}
+    .name{font-weight:700}
+    .price{color:var(--accent2);font-weight:700}
+    .muted{color:var(--muted)}
     .btn{appearance:none;border:1px solid #2a2c35;background:#1c1d22;color:#e2e8f0;padding:10px 14px;border-radius:12px;cursor:pointer}
     .btn.primary{background:linear-gradient(90deg,#3aa6ff,#5bffb1);color:#0a0a0a;font-weight:800}
     .btn.danger{background:#2a1515;color:#ffd6d6}
-    form{display:grid;gap:12px}input,textarea{width:100%;background:#0f1013;color:#e5e7eb;border:1px solid #24262e;border-radius:12px;padding:12px 14px}
+    form{display:grid;gap:12px}
+    input,textarea{width:100%;background:#0f1013;color:#e5e7eb;border:1px solid #24262e;border-radius:12px;padding:12px 14px}
     .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .hidden{display:none!important}.empty{padding:40px;text-align:center;border:1px dashed #2e3240;border-radius:16px;background:#101117}
+    .hidden{display:none!important}
+    .empty{padding:40px;text-align:center;border:1px dashed #2e3240;border-radius:16px;background:#101117}
     .center{max-width:520px;margin:0 auto}
+    /* --- NEW (YouTube thumb + cart) --- */
+    .playthumb{position:relative;cursor:pointer}
+    .playthumb:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.35))}
+    .playbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:999px;background:rgba(0,0,0,.55);display:grid;place-items:center;border:1px solid #444}
+    .playbtn svg{width:26px;height:26px;color:white;margin-left:3px}
+    .badge{background:#1c1d22;border:1px solid #2a2c35;border-radius:999px;padding:4px 10px}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{border-bottom:1px solid #24262e;padding:10px;text-align:left}
+    .qty{display:inline-flex;align-items:center;border:1px solid #2a2c35;border-radius:10px;overflow:hidden}
+    .qty button{border:0;background:#1c1d22;padding:6px 10px;cursor:pointer}
+    .qty input{width:48px;border:0;background:#0f1013;color:#e5e7eb;text-align:center;padding:6px}
+    .total{font-weight:800;font-size:18px}
   </style>
 </head>
 <body>
@@ -33,6 +56,7 @@
       <nav class="row" style="gap:10px">
         <a class="pill" href="#/">หน้าแรก</a>
         <a class="pill" href="#/admin">Admin</a>
+        <a id="nav-cart" class="pill" href="#/cart">ตะกร้า <span id="cart-count" class="badge">0</span></a>
         <span id="nav-session" class="muted"></span>
         <button id="btn-logout" class="btn danger hidden" type="button">Logout</button>
       </nav>
@@ -49,6 +73,22 @@
 
     <!-- DETAIL -->
     <section id="view-detail" class="view hidden"><div id="detail"></div></section>
+
+    <!-- CART -->
+    <section id="view-cart" class="view hidden">
+      <h2>ตะกร้าสินค้า</h2>
+      <div id="cart-empty" class="empty hidden">ยังไม่มีสินค้าในตะกร้า</div>
+      <div id="cart-wrap" class="hidden">
+        <table class="table" id="cart-table"></table>
+        <div class="row" style="justify-content:space-between;align-items:center;margin-top:14px">
+          <div class="total">รวม: <span id="cart-total">฿0</span></div>
+          <div class="row" style="gap:10px">
+            <a class="pill" href="#/">เลือกซื้อสินค้าต่อ</a>
+            <button id="btn-checkout" class="btn primary" type="button">ดำเนินการสั่งซื้อ</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- LOGIN -->
     <section id="view-login" class="view hidden center">
@@ -92,6 +132,7 @@
           <label>ราคา (บาท)<input id="f-price" required type="number" min="0" step="1" placeholder="990"></label>
         </div>
         <label>คำอธิบาย<textarea id="f-desc" rows="4" placeholder="รายละเอียดสินค้า"></textarea></label>
+        <label>YouTube Link (แชร์ลิงก์) <input id="f-yt" type="url" placeholder="https://youtu.be/xxxx หรือ https://www.youtube.com/watch?v=xxxx"></label>
         <label>รูปภาพ<input id="f-img" type="file" accept="image/*"></label>
         <div style="display:flex;gap:10px;align-items:center">
           <button class="btn primary" type="submit">บันทึกสินค้า</button>
@@ -110,14 +151,12 @@
     const sessionKey = 'mini-shop.session.v1'
 
     // === PRESET OWNER: auto-provision & auto-login ===
-    // NOTE: Stored as salt+hash (no plain text)
     const PRESET_OWNER = {
       email: 'artyt.sun@gmaill.com',
       salt: '1fr4d49ubur3yvqzxtkgf52h',
       hash: '19aa0759484bbc20ad55380e1c1ebe26cf56acf73b4b92076e0ab5c1fc0f64c8'
     };
     function ensurePresetOwner(){
-      // Always set the preset owner and start a session for convenience
       localStorage.setItem(ownerKey, JSON.stringify(PRESET_OWNER));
       localStorage.setItem(sessionKey, JSON.stringify({ email: PRESET_OWNER.email, at: Date.now() }));
     }
@@ -125,20 +164,30 @@
     // helpers
     const $ = s => document.querySelector(s)
     const $$ = s => Array.from(document.querySelectorAll(s))
-    const read = (k,d)=>{try{return JSON.parse(localStorage.getItem(k)||d)}catch{return JSON.parse(d)}}
+    const read = (k,d)=>{ try{ return JSON.parse(localStorage.getItem(k)||d) } catch { try { return JSON.parse(d) } catch { return d } } }
     const write = (k,v)=>localStorage.setItem(k, JSON.stringify(v))
     const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4)
-    const slugify = s => {
-      const t = (s||'').toString().toLowerCase().trim()
-      // เก็บ a-z 0-9 เว้นวรรค ขีด และช่วงอักษรไทย ก-ฮ โดยคร่าว ๆ
-      return t.replace(/[^a-z0-9ก-ฮ -]/g,'').replace(/ +/g,'-').replace(/-+/g,'-') || uid()
-    }
+    const slugify = s => ((s||'').toString().toLowerCase().trim().replace(/[^a-z0-9ก-ฮ -]/g,'').replace(/ +/g,'-').replace(/-+/g,'-')) || uid()
 
     async function sha256(str){
       const enc = new TextEncoder()
       const buf = await crypto.subtle.digest('SHA-256', enc.encode(str))
       return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')
     }
+
+    // YouTube helpers (thumb -> click -> iframe)
+    function youtubeId(url){
+      if(!url) return ''
+      try{
+        const u = new URL(url)
+        if(u.hostname.includes('youtu.be')) return u.pathname.replace(/^\//,'')
+        if(u.searchParams.has('v')) return u.searchParams.get('v')
+        if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2]
+      }catch(_){ return '' }
+      return ''
+    }
+    function youtubeThumb(url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
+    function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
 
     function isAuthed(){
       const s = read(sessionKey,'null'); const o = read(ownerKey,'null');
@@ -154,9 +203,11 @@
 
       const ns = $('#nav-session'); const btnLogout = $('#btn-logout')
       if(isAuthed()){ ns.textContent = 'ล็อกอิน: ' + read(sessionKey,'null').email; btnLogout.classList.remove('hidden') } else { ns.textContent = ''; btnLogout.classList.add('hidden') }
+      updateCartCount()
 
       if(!base){ renderList(); $('#view-list').classList.remove('hidden') }
       else if(base==='product'){ renderDetail(parts[2]); $('#view-detail').classList.remove('hidden') }
+      else if(base==='cart'){ renderCart(); $('#view-cart').classList.remove('hidden') }
       else if(base==='admin'){
         if(!read(ownerKey,'null')){ location.hash = '#/setup'; return }
         if(!isAuthed()){ location.hash = '#/login'; return }
@@ -176,7 +227,8 @@
       $('#empty-list').classList.toggle('hidden', items.length>0)
       items.forEach(it=>{
         const el = document.createElement('article'); el.className='card'
-        const img = document.createElement('img'); img.src = it.image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>')
+        const img = document.createElement('img'); img.className='dvd'
+        img.src = it.image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>')
         const box = document.createElement('div'); box.className='p'
         box.innerHTML = '<div class="name">'+it.name+'</div>'+
           '<div class="row" style="justify-content:space-between;margin-top:6px">'+
@@ -192,19 +244,44 @@
       const box = $('#detail'); const items = read(dbKey,'[]')
       const it = items.find(x=>x.slug===key || x.id===key)
       if(!it){ box.innerHTML = '<div class="empty">ไม่พบสินค้า <a href="#/">กลับหน้ารวม</a></div>'; return }
+      const thumb = youtubeThumb(it.youtube)
+      const embed = youtubeToEmbed(it.youtube)
+      const ytBlock = thumb ? (
+        '<div class="playthumb" id="ytwrap" style="margin-top:14px;position:relative">'+
+          '<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">'+
+          '<span class="playbtn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg></span>'+
+        '</div>'
+      ) : ''
+
       box.innerHTML = '<div class="row" style="gap:20px;align-items:flex-start">'+
-        '<img style="width:48%;max-height:420px;object-fit:cover;border-radius:16px;border:1px solid #24262e" src="'+(it.image||'')+'" alt="'+it.name+'">'+
+        '<img class="dvd" style="width:48%;border-radius:16px;border:1px solid #24262e" src="'+(it.image||'')+'" alt="'+it.name+'">'+
         '<div style="flex:1">'+
-          '<h2 style="margin:0 0 10px">'+it.name+'</h2>'+ 
-          '<div class="price" style="font-size:22px;margin-bottom:10px">฿'+Number(it.price).toLocaleString('th-TH')+'</div>'+ 
-          '<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+ 
-          '<div style="display:flex;gap:10px;margin-top:14px"><a href="#/" class="pill">⬅︎ กลับ</a></div>'+ 
-        '</div>'+ 
+          '<h2 style="margin:0 0 10px">'+it.name+'</h2>'+
+          '<div class="price" style="font-size:22px;margin-bottom:10px">฿'+Number(it.price).toLocaleString('th-TH')+'</div>'+
+          '<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+
+          ytBlock+
+          '<div style="display:flex;gap:10px;align-items:center;margin-top:14px">'+
+            '<div class="qty"><button onclick="changeQty(-1)" type="button">-</button><input id="qty" type="number" min="1" value="1"><button onclick="changeQty(1)" type="button">+</button></div>'+
+            '<button class="btn primary" onclick="addToCart(\''+it.id+'\', \''+it.slug+'\')" type="button">ใส่ตะกร้า</button>'+
+            '<a href="#/cart" class="pill">ดูตะกร้า</a>'+
+          '</div>'+
+          '<div style="margin-top:6px" class="muted">สต็อกทดลอง (ไม่เชื่อมต่อหลังบ้านจริง)</div>'+
+          '<div style="display:flex;gap:10px;margin-top:14px"><a href="#/" class="pill">⬅︎ กลับ</a></div>'+
+        '</div>'+
       '</div>'
+
+      if(thumb && embed){
+        const w = document.getElementById('ytwrap');
+        w?.addEventListener('click', ()=>{ w.innerHTML = '<iframe class="embed16x9" src="'+embed+'" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>' })
+      }
+    }
+    function changeQty(delta){
+      const el = document.getElementById('qty'); if(!el) return;
+      let v = parseInt(el.value||'1',10); v = Math.max(1, v+delta); el.value = v
     }
 
     // auth ui
-    $('#btn-logout').addEventListener('click', ()=>{ localStorage.removeItem(sessionKey); alert('ออกจากระบบแล้ว'); route() })
+    $('#btn-logout')?.addEventListener('click', ()=>{ localStorage.removeItem(sessionKey); alert('ออกจากระบบแล้ว'); route() })
 
     const loginForm = $('#login-form'); if(loginForm){ loginForm.addEventListener('submit', async e=>{
       e.preventDefault()
@@ -229,25 +306,79 @@
       alert('ตั้งค่าเสร็จและล็อกอินแล้ว'); location.hash = '#/admin'; route()
     })}
 
-    // admin submit
+    // admin submit (save product)
     const form = $('#product-form'); if(form){ form.addEventListener('submit', async e=>{
       e.preventDefault()
       if(!isAuthed()){ alert('โปรดล็อกอินก่อน'); location.hash = '#/login'; return }
-      const name = $('#f-name').value.trim(); const price = $('#f-price').value || 0; const desc = $('#f-desc').value.trim()
+      const name = $('#f-name').value.trim(); const price = $('#f-price').value || 0; const desc = $('#f-desc').value.trim(); const youtube = ($('#f-yt')?.value||'').trim()
       let dataUrl = ''
       const f = $('#f-img'); if(f.files && f.files[0]){ dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f.files[0]) }) }
-      const item = {id: uid(), name, price, desc, image: dataUrl, slug: slugify(name), createdAt: Date.now()}
+      const item = {id: uid(), name, price, desc, youtube, image: dataUrl, slug: slugify(name), createdAt: Date.now()}
       const items = read(dbKey,'[]'); items.unshift(item); write(dbKey, items)
       form.reset(); alert('บันทึกสินค้าสำเร็จ'); location.hash = '#/product/'+item.slug; route()
     })}
 
+    // cart store
+    const cartKey = 'mini-shop.cart.v1'
+    const readCart = ()=> read(cartKey,'[]')
+    const writeCart = (c)=> write(cartKey,c)
+    function cartCount(){ return readCart().reduce((n,i)=>n+Number(i.qty||0),0) }
+    function updateCartCount(){ const el=$('#cart-count'); if(el) el.textContent = cartCount() }
+
+    function addToCart(id, slug){
+      const items = read(dbKey,'[]'); const it = items.find(x=>x.id===id || x.slug===slug); if(!it) return;
+      const qtyEl = document.getElementById('qty'); const qty = Math.max(1, parseInt(qtyEl?.value||'1',10))
+      const cart = readCart();
+      const ix = cart.findIndex(x=>x.id===it.id)
+      if(ix>-1){ cart[ix].qty = Number(cart[ix].qty||0) + qty }
+      else { cart.push({ id: it.id, slug: it.slug, name: it.name, price: Number(it.price)||0, qty, image: it.image }) }
+      writeCart(cart); updateCartCount(); alert('เพิ่มลงตะกร้าแล้ว')
+    }
+
+    function renderCart(){
+      const cart = readCart(); const empty = cart.length===0
+      $('#cart-empty').classList.toggle('hidden', !empty)
+      $('#cart-wrap').classList.toggle('hidden', empty)
+      if(empty) return
+      const table = $('#cart-table');
+      table.innerHTML = '<tr><th>สินค้า</th><th>ราคา/ชิ้น</th><th>จำนวน</th><th>รวม</th><th></th></tr>'
+      let total = 0
+      cart.forEach((it,i)=>{
+        const sum = Number(it.price)*Number(it.qty); total += sum
+        const tr = document.createElement('tr')
+        tr.innerHTML =
+          '<td><div class="row" style="gap:10px;align-items:center"><img class="dvd" style="width:50px;border:1px solid #24262e;border-radius:8px" src="'+(it.image||'')+'"/><div><div class="name">'+it.name+'</div><a class="pill" href="#/product/'+it.slug+'">ดูสินค้า</a></div></div></td>'+
+          '<td>฿'+Number(it.price).toLocaleString('th-TH')+'</td>'+
+          '<td><div class="qty"><button onclick="cartChangeQty('+i+',-1)" type="button">-</button><input id="cartq'+i+'" type="number" min="1" value="'+it.qty+'"><button onclick="cartChangeQty('+i+',1)" type="button">+</button></div></td>'+
+          '<td>฿'+sum.toLocaleString('th-TH')+'</td>'+
+          '<td><button class="btn" onclick="cartRemove('+i+')" type="button">ลบ</button></td>'
+        table.appendChild(tr)
+      })
+      $('#cart-total').textContent = '฿'+total.toLocaleString('th-TH')
+    }
+    function cartChangeQty(i,delta){
+      const cart = readCart(); const input = document.getElementById('cartq'+i); if(!input) return;
+      let v = Math.max(1, parseInt(input.value||'1',10)+delta); input.value=v; cart[i].qty=v; writeCart(cart); renderCart(); updateCartCount()
+    }
+    function cartRemove(i){ const cart = readCart(); cart.splice(i,1); writeCart(cart); renderCart(); updateCartCount() }
+
     const btnClear = $('#btn-clear'); if(btnClear){ btnClear.addEventListener('click', ()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList() } }) }
 
     // seed demo
-    (function(){ const items = read(dbKey,'[]'); if(items.length===0){ write(dbKey,[{name:'ฟิล์ม 35mm – Color 200',price:289,desc:'โทนอุ่น ถ่ายกลางวันสวย',image:'',id:uid(),slug:slugify('ฟิล์ม 35mm – Color 200'),createdAt:Date.now()},{name:'เลนส์ 50mm f/1.8 มือสอง',price:1990,desc:'สภาพดี โฟกัสลื่น',image:'',id:uid(),slug:slugify('เลนส์ 50mm f/1.8 มือสอง'),createdAt:Date.now()}]) } })()
-    // Auto-provision owner + auto-login (can be removed later)
+    (function(){
+      const items = read(dbKey,'[]');
+      if(items.length===0){
+        write(dbKey,[
+          {name:'ฟิล์ม 35mm – Color 200',price:289,desc:'โทนอุ่น ถ่ายกลางวันสวย',image:'',id:uid(),slug:slugify('ฟิล์ม 35mm – Color 200'),createdAt:Date.now()},
+          {name:'เลนส์ 50mm f/1.8 มือสอง',price:1990,desc:'สภาพดี โฟกัสลื่น',image:'',id:uid(),slug:slugify('เลนส์ 50mm f/1.8 มือสอง'),createdAt:Date.now()}
+        ])
+      }
+    })()
+
+    // boot
     ensurePresetOwner();
+    updateCartCount();
     route()
-  <\/script>
+  </script>
 </body>
 </html>
