@@ -235,14 +235,19 @@
     }
 
     // YouTube helpers (thumb -> click -> iframe)
-    function youtubeId(url){
-      if(!url) return ''
+    function youtubeId(input){
+      if(!input) return '';
+      const s = String(input).trim();
+      const m = s.match(/(?:youtu\.be\/|v=|shorts\/)([A-Za-z0-9_-]{6,})/);
+      if(m) return m[1];
       try{
-        const u = new URL(url)
-        if(u.hostname.includes('youtu.be')) return u.pathname.replace(/^\//,'')
-        if(u.searchParams.has('v')) return u.searchParams.get('v')
-        if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2]
+        const url = new URL(s.startsWith('http') ? s : ('https://'+s));
+        if(url.hostname.includes('youtu.be')) return url.pathname.replace(/^\//,'');
+        if(url.searchParams.has('v')) return url.searchParams.get('v');
+        if(url.pathname.startsWith('/shorts/')) return url.pathname.split('/')[2];
       }catch(_){ return '' }
+      return '';
+    }catch(_){ return '' }
       return ''
     }
     function youtubeThumb(url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
@@ -304,25 +309,6 @@
           '</div>'
         el.appendChild(img); el.appendChild(box); grid.appendChild(el)
       })
-    }{
-      const grid = $('#product-grid'); let items = read(dbKey,'[]')
-      if(!Array.isArray(items)) items = []
-      grid.innerHTML = ''
-      $('#empty-list').classList.toggle('hidden', items.length>0)
-      items.forEach(it=>{
-        const el = document.createElement('article'); el.className='card'
-        const img = document.createElement('img'); img.className='dvd'
-        img.src = it.image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>')
-        const box = document.createElement('div'); box.className='p'
-        const price = Number(it.price||0)
-        const slug = it.slug || slugify(it.name)
-        box.innerHTML = '<div class="name">'+(it.name||'สินค้า')+'</div>'+
-          '<div class="row" style="justify-content:space-between;margin-top:6px">'+
-          '<span class="price">฿'+price.toLocaleString('th-TH')+'</span>'+
-          '<a class="pill" href="#/product/'+slug+'">ดูรายละเอียด</a>'+
-          '</div>'
-        el.appendChild(img); el.appendChild(box); grid.appendChild(el)
-      })
     }
 
     // detail
@@ -360,7 +346,6 @@
         '</div>'+
       '</div>'
 
-      // thumbs switcher
       const main = document.getElementById('main-cover')
       document.querySelectorAll('.thumbs img').forEach(img=>{
         img.addEventListener('click', ()=>{
@@ -371,19 +356,15 @@
         })
       })
 
-      // youtube click to play
       if(thumb && embed){
         const w = document.getElementById('ytwrap');
-        w?.addEventListener('click', ()=>{
+        if(w){ w.addEventListener('click', ()=>{
           w.classList.remove('playthumb')
           w.innerHTML = '<iframe class="embed16x9" src="'+embed+'?autoplay=1&rel=0" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'
-        })
+        })}
       }
     }
     function changeQty(delta){
-      const el = document.getElementById('qty'); if(!el) return;
-      let v = parseInt(el.value||'1',10); v = Math.max(1, v+delta); el.value = v
-    }(delta){
       const el = document.getElementById('qty'); if(!el) return;
       let v = parseInt(el.value||'1',10); v = Math.max(1, v+delta); el.value = v
     }
