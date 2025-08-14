@@ -150,6 +150,29 @@
     const ownerKey = 'mini-shop.owner.v1'
     const sessionKey = 'mini-shop.session.v1'
 
+    // --- MIGRATION: move legacy product storage to v1 & sanitize ---
+    const LEGACY_KEYS = ['mini-shop.products', 'products', 'shop.products']
+    function readRaw(k){ return localStorage.getItem(k) }
+    function migrateDB(){
+      try{
+        let v = localStorage.getItem(dbKey)
+        let arr
+        try{ arr = JSON.parse(v||'[]') }catch{ arr = [] }
+        if(!Array.isArray(arr)) arr = []
+        for(const k of LEGACY_KEYS){
+          const raw = readRaw(k); if(!raw) continue
+          try{
+            const oldArr = JSON.parse(raw)
+            if(Array.isArray(oldArr) && oldArr.length){ arr = oldArr.concat(arr) }
+            localStorage.removeItem(k)
+          }catch{ /* ignore */ }
+        }
+        // drop invalid items
+        arr = arr.filter(x => x && typeof x === 'object' && x.name)
+        localStorage.setItem(dbKey, JSON.stringify(arr))
+      }catch{/* ignore */}
+    }
+
     // === PRESET OWNER: auto-provision & auto-login ===
     const PRESET_OWNER = {
       email: 'artyt.sun@gmaill.com',
@@ -222,7 +245,8 @@
 
     // list
     function renderList(){
-      const grid = $('#product-grid'); const items = read(dbKey,'[]')
+      const grid = $('#product-grid'); let items = read(dbKey,'[]')
+      if(!Array.isArray(items)) items = []
       grid.innerHTML = ''
       $('#empty-list').classList.toggle('hidden', items.length>0)
       items.forEach(it=>{
@@ -230,13 +254,16 @@
         const img = document.createElement('img'); img.className='dvd'
         img.src = it.image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>')
         const box = document.createElement('div'); box.className='p'
-        box.innerHTML = '<div class="name">'+it.name+'</div>'+
+        const price = Number(it.price||0)
+        const slug = it.slug || slugify(it.name)
+        box.innerHTML = '<div class="name">'+(it.name||'สินค้า')+'</div>'+
           '<div class="row" style="justify-content:space-between;margin-top:6px">'+
-          '<span class="price">฿'+Number(it.price).toLocaleString('th-TH')+'</span>'+
-          '<a class="pill" href="#/product/'+it.slug+'">ดูรายละเอียด</a>'+
+          '<span class="price">฿'+price.toLocaleString('th-TH')+'</span>'+
+          '<a class="pill" href="#/product/'+slug+'">ดูรายละเอียด</a>'+
           '</div>'
         el.appendChild(img); el.appendChild(box); grid.appendChild(el)
       })
+    })
     }
 
     // detail
@@ -366,7 +393,8 @@
 
     // seed demo
     (function(){
-      const items = read(dbKey,'[]');
+      migrateDB()
+      let items = read(dbKey,'[]'); if(!Array.isArray(items)) items = []
       if(items.length===0){
         write(dbKey,[
           {name:'ฟิล์ม 35mm – Color 200',price:289,desc:'โทนอุ่น ถ่ายกลางวันสวย',image:'',id:uid(),slug:slugify('ฟิล์ม 35mm – Color 200'),createdAt:Date.now()},
@@ -379,6 +407,7 @@
     ensurePresetOwner();
     updateCartCount();
     route()
-  </script>
+
+  <\/script>
 </body>
 </html>
