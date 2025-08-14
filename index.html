@@ -288,6 +288,7 @@
       window.scrollTo({top:0, behavior:'instant'})
     }
     window.addEventListener('hashchange', route)
+    document.addEventListener('DOMContentLoaded', ()=>{ try{ migrateDB() }catch{}; try{ ensurePresetOwner() }catch{}; route() })
 
     // list
     function renderList(){
@@ -365,7 +366,7 @@
         } else {
           const url = w.getAttribute('data-url'); if(url) window.open(url, '_blank')
         }
-      }) })}
+      }) }
       }
     }
     function changeQty(delta){
