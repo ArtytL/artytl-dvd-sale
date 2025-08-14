@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mini Shop – SPA + Email Login (Local only)</title>
+  <link rel="icon" href="data:,">
   <style>
     :root{--bg:#0b0b0c;--card:#141417;--muted:#8b90a1;--text:#e9ecf1;--accent:#86e1ff;--accent2:#a1ffb2;--danger:#ff7a7a}
     *{box-sizing:border-box}
@@ -61,7 +62,7 @@
   <header>
     <div class="wrap row">
       <div class="row" style="gap:10px">
-        <strong>Mini Shop</strong>
+        <strong>Mini Shop</strong> <span class="badge">DEV r7</span>
         <span class="muted">SPA + Email Login (LocalStorage)</span>
       </div>
       <nav class="row" style="gap:10px">
@@ -70,7 +71,8 @@
         <a class="pill" href="#/notify">แจ้งโอน</a>
         <a id="nav-cart" class="pill" href="#/cart">ตะกร้า <span id="cart-count" class="badge">0</span></a>
         <span id="nav-session" class="muted"></span>
-        <button id="btn-logout" class="btn danger hidden" type="button">Logout</button>
+        <button id="btn-logout" class="btn danger hidden" type="button">Logout<\/button>
+        <button id="btn-reset" class="btn" type="button">Reset</button>
       </nav>
     </div>
   </header>
@@ -196,6 +198,7 @@
   async function sendEmail(to,subject,message){ const cfg=getEmailCfg(); if(cfg&&cfg.publicKey&&cfg.serviceId&&cfg.templateId){ try{ await loadEmailJS(cfg.publicKey); await emailjs.send(cfg.serviceId,cfg.templateId,{to_email:to,subject,message}); return true }catch(e){ console.error('emailjs',e) } } const mailto='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message); window.open(mailto,'_blank'); return false }
 
   // ===== Logout/Login/Setup =====
+  const btnReset=document.getElementById('btn-reset'); if(btnReset){ btnReset.addEventListener('click',()=>{ if(confirm('ล้างข้อมูลและรีเซ็ตเดโม่?')){ [dbKey,cartKey,ordersKey,slipsKey].forEach(k=>localStorage.removeItem(k)); seedDemo(); alert('รีเซ็ตเรียบร้อย'); route() } }) }
   $('#btn-logout').addEventListener('click',()=>{ localStorage.removeItem(sessionKey); alert('ออกจากระบบแล้ว'); route() })
   const loginForm=$('#login-form'); if(loginForm){ loginForm.addEventListener('submit',async e=>{ e.preventDefault(); const email=$('#login-email').value.trim().toLowerCase(); const pass=$('#login-pass').value; const o=read(ownerKey,'null'); const msg=$('#login-msg'); msg.textContent=''; if(!o){ msg.textContent='ยังไม่ได้ตั้งค่าเจ้าของร้าน ไปที่ ตั้งค่าครั้งแรก'; return } const hash=await sha256(pass+o.salt); if(email===o.email && hash===o.hash){ write(sessionKey,{email,at:Date.now()}); location.hash='#/admin'; route() } else { msg.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง' } }) }
   const setupForm=$('#setup-form'); if(setupForm){ setupForm.addEventListener('submit',async e=>{ e.preventDefault(); const email=$('#setup-email').value.trim().toLowerCase(); const p1=$('#setup-pass').value; const p2=$('#setup-pass2').value; const msg=$('#setup-msg'); msg.textContent=''; if(p1.length<6){ msg.textContent='รหัสผ่านควรยาวอย่างน้อย 6 ตัว'; return } if(p1!==p2){ msg.textContent='รหัสผ่านไม่ตรงกัน'; return } const salt=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2); const hash=await sha256(p1+salt); write(ownerKey,{email,salt,hash}); write(sessionKey,{email,at:Date.now()}); alert('ตั้งค่าเสร็จและล็อกอินแล้ว'); location.hash='#/admin'; route() }) }
