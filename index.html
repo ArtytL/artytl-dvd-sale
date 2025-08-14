@@ -90,6 +90,17 @@
       </div>
     </section>
 
+    <!-- CHECKOUT -->
+    <section id="view-checkout" class="view hidden">
+      <h2>ชำระเงิน</h2>
+      <div id="checkout"></div>
+    </section>
+
+    <!-- THANKS / ORDER RECEIVED -->
+    <section id="view-thanks" class="view hidden">
+      <div id="thanksbox"></div>
+    </section>
+
     <!-- LOGIN -->
     <section id="view-login" class="view hidden center">
       <h2>เข้าสู่ระบบ</h2>
@@ -139,6 +150,8 @@
           <button id="btn-clear" class="btn" type="button">ลบข้อมูลทั้งหมด</button>
         </div>
       </form>
+      <h3 style="margin-top:20px">สินค้าปัจจุบัน</h3>
+      <div id="admin-list"></div>
     </section>
   </main>
 
@@ -231,10 +244,13 @@
       if(!base){ renderList(); $('#view-list').classList.remove('hidden') }
       else if(base==='product'){ renderDetail(parts[2]); $('#view-detail').classList.remove('hidden') }
       else if(base==='cart'){ renderCart(); $('#view-cart').classList.remove('hidden') }
+      else if(base==='checkout'){ renderCheckout(); $('#view-checkout').classList.remove('hidden') }
+      else if(base==='thanks'){ renderThanks(parts[2]||''); $('#view-thanks').classList.remove('hidden') }
       else if(base==='admin'){
         if(!read(ownerKey,'null')){ location.hash = '#/setup'; return }
         if(!isAuthed()){ location.hash = '#/login'; return }
-        $('#view-admin').classList.remove('hidden')
+        $('#view-admin').classList.remove('hidden');
+        renderAdminList()
       }
       else if(base==='login'){ $('#view-login').classList.remove('hidden') }
       else if(base==='setup'){ $('#view-setup').classList.remove('hidden') }
@@ -263,7 +279,6 @@
           '</div>'
         el.appendChild(img); el.appendChild(box); grid.appendChild(el)
       })
-    })
     }
 
     // detail
@@ -390,6 +405,174 @@
     function cartRemove(i){ const cart = readCart(); cart.splice(i,1); writeCart(cart); renderCart(); updateCartCount() }
 
     const btnClear = $('#btn-clear'); if(btnClear){ btnClear.addEventListener('click', ()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList() } }) }
+
+    // === NEW: Orders/Checkout/Admin list helpers ===
+    const ordersKey = 'mini-shop.orders.v1'
+    const readOrders = ()=> read(ordersKey,'[]')
+    const writeOrders = (o)=> write(ordersKey,o)
+    const THB = n => '฿'+Number(n||0).toLocaleString('th-TH')
+
+    function renderAdminList(){
+      const wrap = $('#admin-list'); if(!wrap) return
+      const items = read(dbKey,'[]');
+      if(!Array.isArray(items) || items.length===0){ wrap.innerHTML = '<div class="empty">ยังไม่มีสินค้า</div>'; return }
+      let html = '<table class="table"><tr><th>สินค้า</th><th>ราคา</th><th>เมื่อ</th><th></th></tr>'
+      items.forEach((it,i)=>{
+        const date = new Date(it.createdAt||Date.now()).toLocaleString('th-TH')
+        html += '<tr><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'">ดู</a> <button class="btn" type="button" onclick="adminDelete('+i+')">ลบ</button></td></tr>'
+      })
+      html += '</table>'
+      wrap.innerHTML = html
+    }
+    function adminDelete(i){
+      if(!confirm('ลบสินค้านี้?')) return
+      const items = read(dbKey,'[]'); items.splice(i,1); write(dbKey,items); renderAdminList(); renderList()
+    }
+
+    function summarizeCart(){
+      const cart = readCart();
+      const items = cart.map(it=>({ name: it.name, qty: Number(it.qty||1), price: Number(it.price||0), sum: Number(it.price||0)*Number(it.qty||1) }))
+      const subtotal = items.reduce((a,b)=>a+b.sum,0)
+      const shipping = cart.length>0 ? 50 : 0
+      const total = subtotal + shipping
+      return {items, subtotal, shipping, total}
+    }
+
+    function renderCheckout(){
+      const cart = readCart();
+      if(cart.length===0){ location.hash = '#/cart'; return }
+      const box = document.getElementById('checkout'); if(!box) return
+      const {items, subtotal, shipping, total} = summarizeCart()
+      let lines = '<table class="table"><tr><th>สินค้า</th><th>จำนวน</th><th>ราคา</th><th>รวม</th></tr>'
+      items.forEach(it=>{ lines += '<tr><td>'+it.name+'</td><td>'+it.qty+'</td><td>'+THB(it.price)+'</td><td>'+THB(it.sum)+'</td></tr>' })
+      lines += '<tr><td colspan="3" style="text-align:right">รวมค่าสินค้า</td><td>'+THB(subtotal)+'</td></tr>'
+      lines += '<tr><td colspan="3" style="text-align:right">ค่าส่ง (เหมาจ่าย)</td><td>'+THB(shipping)+'</td></tr>'
+      lines += '<tr><td colspan="3" style="text-align:right;font-weight:800">ยอดชำระ</td><td class="total">'+THB(total)+'</td></tr>'
+      lines += '</table>'
+
+      box.innerHTML = `
+        <form id="checkout-form">
+          <div class="two">
+            <label>ชื่อ<input id="co-first" required></label>
+            <label>นามสกุล<input id="co-last" required></label>
+          </div>
+          <label>ที่อยู่จัดส่ง<textarea id="co-addr" rows="3" required></textarea></label>
+          <div class="two">
+            <label>เบอร์โทรศัพท์<input id="co-tel" required></label>
+            <label>อีเมลผู้รับสินค้า<input id="co-email" type="email" required></label>
+          </div>
+          <h3>สรุปคำสั่งซื้อ</h3>
+          ${lines}
+          <h3>วิธีชำระเงิน</h3>
+          <label><input type="radio" name="pay" value="bank" checked> โอนเงินเข้าบัญชี (ธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล)</label>
+          <label><input type="radio" name="pay" value="paypal"> PayPal (ชำระไปที่อีเมลร้าน: ${PRESET_OWNER.email})</label>
+          <div class="row" style="justify-content:space-between;margin-top:12px">
+            <a class="pill" href="#/cart">⬅︎ กลับตะกร้า</a>
+            <button class="btn primary" type="submit">ยืนยันสั่งซื้อ</button>
+          </div>
+        </form>
+      `
+
+      const form = document.getElementById('checkout-form')
+      form?.addEventListener('submit', (e)=>{
+        e.preventDefault()
+        const first = document.getElementById('co-first').value.trim()
+        const last = document.getElementById('co-last').value.trim()
+        const address = document.getElementById('co-addr').value.trim()
+        const phone = document.getElementById('co-tel').value.trim()
+        const email = document.getElementById('co-email').value.trim()
+        const method = (document.querySelector('input[name="pay"]:checked')||{value:'bank'}).value
+        const orderId = 'ORD-' + Date.now().toString(36).toUpperCase()
+        const summary = summarizeCart()
+        const cart = readCart()
+        const order = {id: orderId, first, last, address, phone, email, method, ...summary, cart}
+        const orders = readOrders(); orders.unshift(order); writeOrders(orders)
+
+        if(method==='bank'){
+          const subject = 'วิธีชำระเงินสำหรับคำสั่งซื้อ '+orderId
+          const body = bankEmailBody(order)
+          const mailto = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)
+          window.open(mailto,'_blank')
+          alert('เราได้เตรียมอีเมลชำระเงินให้คุณแล้ว โปรดแนบสลิปหลังโอน')
+        }else{
+          const subject = 'คำสั่งซื้อ '+orderId+' – ชำระผ่าน PayPal'
+          const body = paypalEmailBody(order)
+          const mailto = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)
+          window.open(mailto,'_blank')
+        }
+
+        writeCart([]); updateCartCount()
+        location.hash = '#/thanks/'+orderId
+      })
+    }
+
+    function bankEmailBody(order){
+      const lines = order.items.map(it=>'• '+it.name+' x '+it.qty+' = '+THB(it.sum)).join('
+')
+      return 'สวัสดี '+order.first+' '+order.last+'
+
+'+
+        'รายละเอียดคำสั่งซื้อ '+order.id+'
+'+lines+'
+'+
+        'รวมค่าสินค้า: '+THB(order.subtotal)+'
+'+
+        'ค่าส่ง (เหมาจ่าย): '+THB(order.shipping)+'
+'+
+        'ยอดชำระทั้งหมด: '+THB(order.total)+'
+
+'+
+        'กรุณาโอนเงินเข้าบัญชี
+ธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล
+
+'+
+        'หลังโอน โปรดตอบกลับอีเมลนี้พร้อมแนบสลิป เพื่อยืนยันการชำระเงิน
+
+'+
+        'ที่อยู่จัดส่ง:
+'+order.address+'
+เบอร์โทร: '+order.phone+'
+
+ขอบคุณครับ/ค่ะ
+Mini Shop'
+    }
+    function paypalEmailBody(order){
+      const lines = order.items.map(it=>'• '+it.name+' x '+it.qty+' = '+THB(it.sum)).join('
+')
+      return 'สวัสดี '+order.first+' '+order.last+'
+
+'+
+        'รายละเอียดคำสั่งซื้อ '+order.id+'
+'+lines+'
+'+
+        'รวมค่าสินค้า: '+THB(order.subtotal)+'
+'+
+        'ค่าส่ง (เหมาจ่าย): '+THB(order.shipping)+'
+'+
+        'ยอดชำระทั้งหมด: '+THB(order.total)+'
+
+'+
+        'โปรดชำระผ่าน PayPal ไปที่อีเมลร้าน: '+PRESET_OWNER.email+'
+'+
+        'ชำระเสร็จแล้วโปรดตอบกลับอีเมลนี้พร้อมแนบสลิป
+
+'+
+        'ที่อยู่จัดส่ง:
+'+order.address+'
+เบอร์โทร: '+order.phone+'
+
+ขอบคุณครับ/ค่ะ
+Mini Shop'
+    }
+
+    function renderThanks(id){
+      const box = document.getElementById('thanksbox'); if(!box) return
+      box.innerHTML = '<h2>รับคำสั่งซื้อแล้ว</h2><p>เลขคำสั่งซื้อ: <strong>'+id+'</strong></p><p>เราได้เปิดหน้าต่างอีเมลพร้อมรายละเอียดให้แล้ว โปรดตรวจสอบกล่องจดหมายของคุณ</p><div style="margin-top:10px"><a class="pill" href="#/">กลับหน้าร้าน</a></div>'
+    }
+
+    // go to checkout from cart & refresh admin list after clear
+    document.getElementById('btn-checkout')?.addEventListener('click', ()=>{ location.hash = '#/checkout' })
+    document.getElementById('btn-clear')?.addEventListener('click', ()=>{ setTimeout(()=>{ renderAdminList(); renderList() }, 100) })
 
     // seed demo
     (function(){
