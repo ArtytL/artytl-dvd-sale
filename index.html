@@ -153,7 +153,8 @@
         <label>YouTube Link (แชร์ลิงก์) <input id="f-yt" type="url" placeholder="https://youtu.be/xxxx หรือ https://www.youtube.com/watch?v=xxxx"></label>
         <label>รูปภาพ<input id="f-img" type="file" accept="image/*"></label>
         <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn primary" type="submit">บันทึกสินค้า</button>
+          <button id="btn-submit-product" class="btn primary" type="submit">บันทึกสินค้า</button>
+          <button id="btn-cancel-edit" class="btn hidden" type="button">ยกเลิกแก้ไข</button>
           <button id="btn-clear" class="btn" type="button">ลบข้อมูลทั้งหมด</button>
         </div>
       </form>
@@ -358,17 +359,30 @@
       alert('ตั้งค่าเสร็จและล็อกอินแล้ว'); location.hash = '#/admin'; route()
     })}
 
-    // admin submit (save product)
-    const form = $('#product-form'); if(form){ form.addEventListener('submit', async e=>{
-      e.preventDefault()
-      if(!isAuthed()){ alert('โปรดล็อกอินก่อน'); location.hash = '#/login'; return }
-      const name = $('#f-name').value.trim(); const price = $('#f-price').value || 0; const desc = $('#f-desc').value.trim(); const youtube = ($('#f-yt')?.value||'').trim()
-      let dataUrl = ''
-      const f = $('#f-img'); if(f.files && f.files[0]){ dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f.files[0]) }) }
-      const item = {id: uid(), name, price, desc, youtube, image: dataUrl, slug: slugify(name), createdAt: Date.now()}
-      const items = read(dbKey,'[]'); items.unshift(item); write(dbKey, items)
-      form.reset(); alert('บันทึกสินค้าสำเร็จ'); location.hash = '#/product/'+item.slug; route()
-    })}
+    // admin submit (save/update product)
+    const form = $('#product-form'); if(form){
+      const cancelBtn = document.getElementById('btn-cancel-edit'); cancelBtn?.addEventListener('click', ()=> exitEditMode())
+      form.addEventListener('submit', async e=>{
+        e.preventDefault()
+        if(!isAuthed()){ alert('โปรดล็อกอินก่อน'); location.hash = '#/login'; return }
+        const name = $('#f-name').value.trim(); const price = $('#f-price').value || 0; const desc = $('#f-desc').value.trim(); const youtube = ($('#f-yt')?.value||'').trim()
+        let dataUrl = ''
+        const f = $('#f-img'); if(f.files && f.files[0]){ dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f.files[0]) }) }
+        const items = read(dbKey,'[]')
+        if(form.dataset.editIndex){
+          const idx = Number(form.dataset.editIndex); const original = items[idx]; if(!original){ alert('ไม่พบสินค้าต้นฉบับ'); return }
+          const image = dataUrl || form.dataset.existingImage || original.image || ''
+          const updated = { ...original, name, price, desc, youtube, image, slug: slugify(name) }
+          items[idx] = updated; write(dbKey, items)
+          alert('อัปเดตสินค้าแล้ว')
+          exitEditMode(); renderAdminList(); renderList(); location.hash = '#/product/'+updated.slug; route()
+        } else {
+          const item = {id: uid(), name, price, desc, youtube, image: dataUrl, slug: slugify(name), createdAt: Date.now()}
+          items.unshift(item); write(dbKey, items)
+          form.reset(); alert('บันทึกสินค้าสำเร็จ'); renderAdminList(); renderList(); location.hash = '#/product/'+item.slug; route()
+        }
+      })
+    }
 
     // cart store
     const cartKey = 'mini-shop.cart.v1'
@@ -434,7 +448,7 @@
       let html = '<table class="table"><tr><th>สินค้า</th><th>ราคา</th><th>เมื่อ</th><th></th></tr>'
       items.forEach((it,i)=>{
         const date = new Date(it.createdAt||Date.now()).toLocaleString('th-TH')
-        html += '<tr><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'">ดู</a> <button class="btn" type="button" onclick="adminDelete('+i+')">ลบ</button></td></tr>'
+        html += '<tr><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'">ดู</a> <button class="btn" type="button" onclick="adminEdit('+i+')">แก้ไข</button> <button class="btn" type="button" onclick="adminDelete('+i+')">ลบ</button></td></tr>'
       })
       html += '</table>'
       wrap.innerHTML = html
@@ -442,6 +456,26 @@
     function adminDelete(i){
       if(!confirm('ลบสินค้านี้?')) return
       const items = read(dbKey,'[]'); items.splice(i,1); write(dbKey,items); renderAdminList(); renderList()
+    }
+    function adminEdit(i){
+      const items = read(dbKey,'[]'); const it = items[i]; if(!it) return
+      const form = $('#product-form'); if(!form) return
+      form.dataset.editIndex = String(i)
+      form.dataset.existingImage = it.image || ''
+      $('#f-name').value = it.name || ''
+      $('#f-price').value = it.price || 0
+      $('#f-desc').value = it.desc || ''
+      $('#f-yt').value = it.youtube || ''
+      const submitBtn = document.getElementById('btn-submit-product'); if(submitBtn) submitBtn.textContent = 'อัปเดตสินค้า'
+      const cancelBtn = document.getElementById('btn-cancel-edit'); cancelBtn?.classList.remove('hidden')
+      window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
+    }
+    function exitEditMode(){
+      const form = $('#product-form'); if(!form) return
+      delete form.dataset.editIndex; delete form.dataset.existingImage
+      form.reset()
+      const submitBtn = document.getElementById('btn-submit-product'); if(submitBtn) submitBtn.textContent = 'บันทึกสินค้า'
+      const cancelBtn = document.getElementById('btn-cancel-edit'); cancelBtn?.classList.add('hidden')
     }
 
     function summarizeCart(){
