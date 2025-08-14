@@ -109,6 +109,19 @@
     const ownerKey = 'mini-shop.owner.v1'
     const sessionKey = 'mini-shop.session.v1'
 
+    // === PRESET OWNER: auto-provision & auto-login ===
+    // NOTE: Stored as salt+hash (no plain text)
+    const PRESET_OWNER = {
+      email: 'artyt.sun@gmaill.com',
+      salt: '1fr4d49ubur3yvqzxtkgf52h',
+      hash: '19aa0759484bbc20ad55380e1c1ebe26cf56acf73b4b92076e0ab5c1fc0f64c8'
+    };
+    function ensurePresetOwner(){
+      // Always set the preset owner and start a session for convenience
+      localStorage.setItem(ownerKey, JSON.stringify(PRESET_OWNER));
+      localStorage.setItem(sessionKey, JSON.stringify({ email: PRESET_OWNER.email, at: Date.now() }));
+    }
+
     // helpers
     const $ = s => document.querySelector(s)
     const $$ = s => Array.from(document.querySelectorAll(s))
@@ -232,8 +245,9 @@
 
     // seed demo
     (function(){ const items = read(dbKey,'[]'); if(items.length===0){ write(dbKey,[{name:'ฟิล์ม 35mm – Color 200',price:289,desc:'โทนอุ่น ถ่ายกลางวันสวย',image:'',id:uid(),slug:slugify('ฟิล์ม 35mm – Color 200'),createdAt:Date.now()},{name:'เลนส์ 50mm f/1.8 มือสอง',price:1990,desc:'สภาพดี โฟกัสลื่น',image:'',id:uid(),slug:slugify('เลนส์ 50mm f/1.8 มือสอง'),createdAt:Date.now()}]) } })()
-
+    // Auto-provision owner + auto-login (can be removed later)
+    ensurePresetOwner();
     route()
-  </script>
+  <\/script>
 </body>
 </html>
