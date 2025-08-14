@@ -507,36 +507,69 @@
     }
 
     function bankEmailBody(order){
-      const lines = order.items.map(it=>'• '+it.name+' x '+it.qty+' = '+THB(it.sum)).join('
+      const lines = order.items.map(it => `• ${it.name} x ${it.qty} = ${THB(it.sum)}`).join('
 ')
-      return 'สวัสดี '+order.first+' '+order.last+'
+      return (
+        `สวัสดี ${order.first} ${order.last}
 
-'+
-        'รายละเอียดคำสั่งซื้อ '+order.id+'
-'+lines+'
-'+
-        'รวมค่าสินค้า: '+THB(order.subtotal)+'
-'+
-        'ค่าส่ง (เหมาจ่าย): '+THB(order.shipping)+'
-'+
-        'ยอดชำระทั้งหมด: '+THB(order.total)+'
+`+
+        `รายละเอียดคำสั่งซื้อ ${order.id}
+${lines}
+`+
+        `รวมค่าสินค้า: ${THB(order.subtotal)}
+`+
+        `ค่าส่ง (เหมาจ่าย): ${THB(order.shipping)}
+`+
+        `ยอดชำระทั้งหมด: ${THB(order.total)}
 
-'+
-        'กรุณาโอนเงินเข้าบัญชี
+`+
+        `กรุณาโอนเงินเข้าบัญชี
 ธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล
 
-'+
-        'หลังโอน โปรดตอบกลับอีเมลนี้พร้อมแนบสลิป เพื่อยืนยันการชำระเงิน
+`+
+        `หลังโอน โปรดตอบกลับอีเมลนี้พร้อมแนบสลิป เพื่อยืนยันการชำระเงิน
 
-'+
-        'ที่อยู่จัดส่ง:
-'+order.address+'
-เบอร์โทร: '+order.phone+'
+`+
+        `ที่อยู่จัดส่ง:
+${order.address}
+เบอร์โทร: ${order.phone}
 
 ขอบคุณครับ/ค่ะ
-Mini Shop'
+Mini Shop`
+      )
     }
     function paypalEmailBody(order){
+      const lines = order.items.map(it => `• ${it.name} x ${it.qty} = ${THB(it.sum)}`).join('
+')
+      return (
+        `สวัสดี ${order.first} ${order.last}
+
+`+
+        `รายละเอียดคำสั่งซื้อ ${order.id}
+${lines}
+`+
+        `รวมค่าสินค้า: ${THB(order.subtotal)}
+`+
+        `ค่าส่ง (เหมาจ่าย): ${THB(order.shipping)}
+`+
+        `ยอดชำระทั้งหมด: ${THB(order.total)}
+
+`+
+        `โปรดชำระผ่าน PayPal ไปที่อีเมลร้าน: ${PRESET_OWNER.email}
+`+
+        `ชำระเสร็จแล้วโปรดตอบกลับอีเมลนี้พร้อมแนบสลิป
+
+`+
+        `ที่อยู่จัดส่ง:
+${order.address}
+เบอร์โทร: ${order.phone}
+
+ขอบคุณครับ/ค่ะ
+Mini Shop`
+      )
+    }
+
+    function renderThanks(id){(order){
       const lines = order.items.map(it=>'• '+it.name+' x '+it.qty+' = '+THB(it.sum)).join('
 ')
       return 'สวัสดี '+order.first+' '+order.last+'
@@ -591,6 +624,6 @@ Mini Shop'
     updateCartCount();
     route()
 
-  <\/script>
+  </script>
 </body>
 </html>
