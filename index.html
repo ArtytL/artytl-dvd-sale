@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mini Shop – Email Login (Local only)</title>
+  <title>Mini Shop – SPA + Email Login (Local only)</title>
   <style>
     :root{--bg:#0b0b0c;--card:#141417;--muted:#8b90a1;--text:#e9ecf1;--accent:#86e1ff;--accent2:#a1ffb2;--danger:#ff7a7a}
     *{box-sizing:border-box}
@@ -32,7 +32,6 @@
     .hidden{display:none!important}
     .empty{padding:40px;text-align:center;border:1px dashed #2e3240;border-radius:16px;background:#101117}
     .center{max-width:520px;margin:0 auto}
-    /* --- NEW (YouTube thumb + cart) --- */
     .playthumb{position:relative;cursor:pointer}
     .playthumb:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.35))}
     .playbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:999px;background:rgba(0,0,0,.55);display:grid;place-items:center;border:1px solid #444}
@@ -77,679 +76,99 @@
   </header>
 
   <main class="wrap">
-    <!-- LIST -->
-    <section id="view-list" class="view">
-      <h2 style="margin:8px 0 16px">สินค้า</h2>
-      <div id="product-grid" class="grid"></div>
-      <div id="empty-list" class="empty hidden">ยังไม่มีสินค้า ลองเพิ่มใน <a href="#/admin">หน้า Admin</a></div>
-    </section>
-
-    <!-- DETAIL -->
+    <section id="view-list" class="view"><h2>สินค้า</h2><div id="product-grid" class="grid"></div><div id="empty-list" class="empty hidden">ยังไม่มีสินค้า ลองเพิ่มใน <a href="#/admin">หน้า Admin</a></div></section>
     <section id="view-detail" class="view hidden"><div id="detail"></div></section>
-
-    <!-- CART -->
-    <section id="view-cart" class="view hidden">
-      <h2>ตะกร้าสินค้า</h2>
-      <div id="cart-empty" class="empty hidden">ยังไม่มีสินค้าในตะกร้า</div>
-      <div id="cart-wrap" class="hidden">
-        <table class="table" id="cart-table"></table>
-        <div class="row" style="justify-content:space-between;align-items:center;margin-top:14px">
-          <div class="total">รวม: <span id="cart-total">฿0</span></div>
-          <div class="row" style="gap:10px">
-            <a class="pill" href="#/">เลือกซื้อสินค้าต่อ</a>
-            <button id="btn-checkout" class="btn primary" type="button">ดำเนินการสั่งซื้อ</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CHECKOUT -->
-    <section id="view-checkout" class="view hidden">
-      <h2>ชำระเงิน</h2>
-      <div id="checkout"></div>
-    </section>
-
-    <!-- THANKS / ORDER RECEIVED -->
-    <section id="view-thanks" class="view hidden">
-      <div id="thanksbox"></div>
-    </section>
-
-    <!-- NOTIFY TRANSFER -->
-    <section id="view-notify" class="view hidden">
-      <h2>แจ้งโอน</h2>
-      <div id="notify"></div>
-    </section>
-
-    <!-- LOGIN -->
-    <section id="view-login" class="view hidden center">
-      <h2>เข้าสู่ระบบ</h2>
-      <p class="muted">ข้อมูลล็อกอินเก็บที่เบราว์เซอร์ของคุณ เหมาะกับใช้งานส่วนตัวหรือทดลอง</p>
-      <form id="login-form">
-        <label>อีเมล<input id="login-email" type="email" required placeholder="you@example.com"></label>
-        <label>รหัสผ่าน<input id="login-pass" type="password" required placeholder="รหัสผ่านของคุณ"></label>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn primary" type="submit">เข้าสู่ระบบ</button>
-          <a class="pill" href="#/setup">ตั้งค่าครั้งแรก</a>
-        </div>
-        <div id="login-msg" class="muted" style="color:var(--danger)"></div>
-      </form>
-    </section>
-
-    <!-- SETUP (first time) -->
-    <section id="view-setup" class="view hidden center">
-      <h2>ตั้งค่าเจ้าของร้านครั้งแรก</h2>
-      <p class="muted">จะบันทึกอีเมลและรหัสผ่านแบบแฮชพร้อมเกลือใน LocalStorage เครื่องนี้เท่านั้น</p>
-      <form id="setup-form">
-        <label>อีเมล<input id="setup-email" type="email" required placeholder="you@example.com"></label>
-        <div class="two">
-          <label>รหัสผ่าน<input id="setup-pass" type="password" required></label>
-          <label>ยืนยันรหัส<input id="setup-pass2" type="password" required></label>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btn primary" type="submit">บันทึกและเข้า Admin</button>
-          <a class="pill" href="#/login">กลับไปล็อกอิน</a>
-        </div>
-        <div id="setup-msg" style="color:var(--danger)"></div>
-      </form>
-    </section>
-
-    <!-- ADMIN -->
-    <section id="view-admin" class="view hidden">
-      <h2>Admin – เพิ่ม/แก้ไขสินค้า</h2>
-      <form id="product-form">
-        <div class="two">
-          <label>ชื่อสินค้า<input id="f-name" required placeholder="เช่น ฟิล์มกล้อง 35mm"></label>
-          <label>ราคา (บาท)<input id="f-price" required type="number" min="0" step="1" placeholder="990"></label>
-        </div>
-        <label>คำอธิบาย<textarea id="f-desc" rows="4" placeholder="รายละเอียดสินค้า"></textarea></label>
-        <label>YouTube Link (แชร์ลิงก์) <input id="f-yt" type="url" placeholder="https://youtu.be/xxxx หรือ https://www.youtube.com/watch?v=xxxx"></label>
-        <label>รูปภาพ (สูงสุด 5 ภาพ; ภาพแรกเป็นปก)<input id="f-img" type="file" accept="image/*" multiple></label>
-        <div id="img-tray" class="admin-tray"></div>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button id="btn-submit-product" class="btn primary" type="submit">บันทึกสินค้า</button>
-          <button id="btn-cancel-edit" class="btn hidden" type="button">ยกเลิกแก้ไข</button>
-          <button id="btn-clear" class="btn" type="button">ลบข้อมูลทั้งหมด</button>
-        </div>
-      </form>
-      <h3 style="margin-top:20px">สินค้าปัจจุบัน</h3>
-      <div id="admin-list"></div>
-      <h3 style="margin-top:20px">แจ้งโอนล่าสุด</h3>
-      <div id="admin-slips"></div>
-    </section>
+    <section id="view-cart" class="view hidden"><h2>ตะกร้าสินค้า</h2><div id="cart-empty" class="empty hidden">ยังไม่มีสินค้าในตะกร้า</div><div id="cart-wrap" class="hidden"><table class="table" id="cart-table"></table><div class="row" style="justify-content:space-between;align-items:center;margin-top:14px"><div class="total">รวม: <span id="cart-total">฿0</span></div><div class="row" style="gap:10px"><a class="pill" href="#/">เลือกซื้อสินค้าต่อ</a><button id="btn-checkout" class="btn primary" type="button">ดำเนินการสั่งซื้อ</button></div></div></div></section>
+    <section id="view-checkout" class="view hidden"><h2>ชำระเงิน</h2><div id="checkout"></div></section>
+    <section id="view-thanks" class="view hidden"><div id="thanksbox"></div></section>
+    <section id="view-notify" class="view hidden"><h2>แจ้งโอน</h2><div id="notify"></div></section>
+    <section id="view-login" class="view hidden center"><h2>เข้าสู่ระบบ</h2><form id="login-form"><label>อีเมล<input id="login-email" type="email" required></label><label>รหัสผ่าน<input id="login-pass" type="password" required></label><div style="display:flex;gap:10px;align-items:center"><button class="btn primary" type="submit">เข้าสู่ระบบ</button><a class="pill" href="#/setup">ตั้งค่าครั้งแรก</a></div><div id="login-msg" style="color:var(--danger)"></div></form></section>
+    <section id="view-setup" class="view hidden center"><h2>ตั้งค่าเจ้าของร้านครั้งแรก</h2><form id="setup-form"><label>อีเมล<input id="setup-email" type="email" required></label><div class="two"><label>รหัสผ่าน<input id="setup-pass" type="password" required></label><label>ยืนยันรหัส<input id="setup-pass2" type="password" required></label></div><div style="display:flex;gap:10px;align-items:center"><button class="btn primary" type="submit">บันทึกและเข้า Admin</button><a class="pill" href="#/login">กลับไปล็อกอิน</a></div><div id="setup-msg" style="color:var(--danger)"></div></form></section>
+    <section id="view-admin" class="view hidden"><h2>Admin – เพิ่ม/แก้ไขสินค้า</h2><form id="product-form"><div class="two"><label>ชื่อสินค้า<input id="f-name" required></label><label>ราคา (บาท)<input id="f-price" required type="number" min="0" step="1"></label></div><label>คำอธิบาย<textarea id="f-desc" rows="4"></textarea></label><label>YouTube Link (แชร์ลิงก์) <input id="f-yt" type="url" placeholder="https://youtu.be/xxxx หรือ https://www.youtube.com/watch?v=xxxx"></label><label>รูปภาพ (สูงสุด 5 ภาพ; ภาพแรกเป็นปก)<input id="f-img" type="file" accept="image/*" multiple></label><div id="img-tray" class="admin-tray"></div><div style="display:flex;gap:10px;align-items:center"><button id="btn-submit-product" class="btn primary" type="submit">บันทึกสินค้า</button><button id="btn-cancel-edit" class="btn hidden" type="button">ยกเลิกแก้ไข</button><button id="btn-clear" class="btn" type="button">ลบข้อมูลทั้งหมด</button></div></form><h3 style="margin-top:20px">สินค้าปัจจุบัน</h3><div id="admin-list"></div><h3 style="margin-top:20px">แจ้งโอนล่าสุด</h3><div id="admin-slips"></div></section>
   </main>
-
   <footer class="wrap muted">© 2025 Mini Shop – Local only</footer>
 
   <script>
-    // keys
-    const dbKey = 'mini-shop.products.v1'
-    const ownerKey = 'mini-shop.owner.v1'
-    const sessionKey = 'mini-shop.session.v1'
+  // ===== Keys & owner preset =====
+  const dbKey='mini-shop.products.v1', ownerKey='mini-shop.owner.v1', sessionKey='mini-shop.session.v1', cartKey='mini-shop.cart.v1', ordersKey='mini-shop.orders.v1', slipsKey='mini-shop.slips.v1'
+  const PRESET_OWNER={ email:'artyt.sun@gmaill.com', salt:'1fr4d49ubur3yvqzxtkgf52h', hash:'19aa0759484bbc20ad55380e1c1ebe26cf56acf73b4b92076e0ab5c1fc0f64c8' }
 
-    // --- MIGRATION: move legacy product storage to v1 & sanitize ---
-    const LEGACY_KEYS = ['mini-shop.products', 'products', 'shop.products']
-    function readRaw(k){ return localStorage.getItem(k) }
-    function migrateDB(){
-      try{
-        let v = localStorage.getItem(dbKey)
-        let arr
-        try{ arr = JSON.parse(v||'[]') }catch{ arr = [] }
-        if(!Array.isArray(arr)) arr = []
-        for(const k of LEGACY_KEYS){
-          const raw = readRaw(k); if(!raw) continue
-          try{
-            const oldArr = JSON.parse(raw)
-            if(Array.isArray(oldArr) && oldArr.length){ arr = oldArr.concat(arr) }
-            localStorage.removeItem(k)
-          }catch{ /* ignore */ }
-        }
-        // drop invalid items
-        arr = arr.filter(x => x && typeof x === 'object' && x.name)
-        localStorage.setItem(dbKey, JSON.stringify(arr))
-      }catch{/* ignore */}
-    }
+  // ===== Utils =====
+  const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s))
+  const read=(k,d)=>{ try{return JSON.parse(localStorage.getItem(k)||d)}catch{ try{return JSON.parse(d)}catch{ return d } } }
+  const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+  const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4)
+  const slugify=s=>((s||'').toString().toLowerCase().trim().replace(/[^a-z0-9ก-ฮ -]/g,'').replace(/ +/g,'-').replace(/-+/g,'-'))||uid()
+  const THB=n=>'฿'+Number(n||0).toLocaleString('th-TH')
+  const readCart=()=>read(cartKey,'[]'), writeCart=c=>write(cartKey,c)
+  const readOrders=()=>read(ordersKey,'[]'), writeOrders=o=>write(ordersKey,o)
+  const readSlips=()=>read(slipsKey,'[]'), writeSlips=s=>write(slipsKey,s)
 
-    // === PRESET OWNER: auto-provision & auto-login ===
-    const PRESET_OWNER = {
-      email: 'artyt.sun@gmaill.com',
-      salt: '1fr4d49ubur3yvqzxtkgf52h',
-      hash: '19aa0759484bbc20ad55380e1c1ebe26cf56acf73b4b92076e0ab5c1fc0f64c8'
-    };
-    function ensurePresetOwner(){
-      localStorage.setItem(ownerKey, JSON.stringify(PRESET_OWNER));
-      localStorage.setItem(sessionKey, JSON.stringify({ email: PRESET_OWNER.email, at: Date.now() }));
-    }
+  async function sha256(str){ const enc=new TextEncoder(); const buf=await crypto.subtle.digest('SHA-256',enc.encode(str)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('') }
 
-    // helpers
-    const $ = s => document.querySelector(s)
-    const $$ = s => Array.from(document.querySelectorAll(s))
-    const read = (k,d)=>{ try{ return JSON.parse(localStorage.getItem(k)||d) } catch { try { return JSON.parse(d) } catch { return d } } }
-    const write = (k,v)=>localStorage.setItem(k, JSON.stringify(v))
-    const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4)
-    const slugify = s => ((s||'').toString().toLowerCase().trim().replace(/[^a-z0-9ก-ฮ -]/g,'').replace(/ +/g,'-').replace(/-+/g,'-')) || uid()
+  // ===== YouTube helpers =====
+  function youtubeId(input){ if(!input) return ''; const s=String(input).trim().replace(/[<>]/g,''); const m=s.match(/(?:youtu\.be\/|v=|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{6,})/); if(m) return m[1]; try{ const url=new URL(s.startsWith('http')?s:('https://'+s)); const host=url.hostname.replace(/^m\./,'').replace(/^www\./,''); if(host.includes('youtu.be')) return url.pathname.split('/').filter(Boolean)[0]||''; if(url.searchParams.has('v')) return url.searchParams.get('v'); const segs=url.pathname.split('/').filter(Boolean); if(['shorts','live','embed'].includes(segs[0])&&segs[1]) return segs[1]; }catch{} return '' }
+  const youtubeThumb=url=>{ const id=youtubeId(url); return id?`https://img.youtube.com/vi/${id}/hqdefault.jpg`:'' }
+  const youtubeToEmbed=url=>{ const id=youtubeId(url); return id?`https://www.youtube.com/embed/${id}`:'' }
 
-    async function sha256(str){
-      const enc = new TextEncoder()
-      const buf = await crypto.subtle.digest('SHA-256', enc.encode(str))
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')
-    }
+  // ===== Auth =====
+  function ensurePresetOwner(){ localStorage.setItem(ownerKey,JSON.stringify(PRESET_OWNER)); localStorage.setItem(sessionKey,JSON.stringify({email:PRESET_OWNER.email,at:Date.now()})) }
+  function isAuthed(){ const s=read(sessionKey,'null'), o=read(ownerKey,'null'); return !!(s&&o&&s.email===o.email) }
 
-    // YouTube helpers (thumb -> click -> iframe)
-    function youtubeId(input){
-      if(!input) return '';
-      const s = String(input).trim().replace(/[<>]/g,'');
-      // quick regex for most patterns
-      const m = s.match(/(?:youtu\.be\/|v=|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{6,})/);
-      if(m) return m[1];
-      try{
-        const url = new URL(s.startsWith('http') ? s : ('https://'+s));
-        const host = url.hostname.replace(/^m\./,'').replace(/^www\./,'');
-        if(host.includes('youtu.be')) return url.pathname.split('/').filter(Boolean)[0]||'';
-        if(url.searchParams.has('v')) return url.searchParams.get('v');
-        const segs = url.pathname.split('/').filter(Boolean);
-        if(['shorts','live','embed'].includes(segs[0]) && segs[1]) return segs[1];
-      }catch(_){ /* ignore */ }
-      return '';
-    }
-    function youtubeThumb(url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
-    function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
+  // ===== Router =====
+  function updateCartCount(){ const el=$('#cart-count'); if(el) el.textContent = readCart().reduce((n,i)=>n+Number(i.qty||0),0) }
+  function route(){ const hash=location.hash||'#/', parts=hash.split('/'); const base=parts[1]||''; $$('.view').forEach(v=>v.classList.add('hidden')); const ns=$('#nav-session'), btnLogout=$('#btn-logout'); if(isAuthed()){ ns.textContent='ล็อกอิน: '+read(sessionKey,'null').email; btnLogout.classList.remove('hidden') } else { ns.textContent=''; btnLogout.classList.add('hidden') } updateCartCount(); if(!base){ renderList(); $('#view-list').classList.remove('hidden') } else if(base==='product'){ renderDetail(parts[2]); $('#view-detail').classList.remove('hidden') } else if(base==='cart'){ renderCart(); $('#view-cart').classList.remove('hidden') } else if(base==='checkout'){ renderCheckout(); $('#view-checkout').classList.remove('hidden') } else if(base==='thanks'){ renderThanks(parts[2]||''); $('#view-thanks').classList.remove('hidden') } else if(base==='notify'){ renderNotify(); $('#view-notify').classList.remove('hidden') } else if(base==='admin'){ if(!read(ownerKey,'null')){ location.hash='#/setup'; return } if(!isAuthed()){ location.hash='#/login'; return } $('#view-admin').classList.remove('hidden'); renderAdminList(); renderAdminSlips() } else if(base==='login'){ $('#view-login').classList.remove('hidden') } else if(base==='setup'){ $('#view-setup').classList.remove('hidden') } else { renderList(); $('#view-list').classList.remove('hidden') } window.scrollTo({top:0,behavior:'instant'}) }
+  window.addEventListener('hashchange',route); document.addEventListener('DOMContentLoaded',()=>{ ensurePresetOwner(); route() })
 
-    function isAuthed(){
-      const s = read(sessionKey,'null'); const o = read(ownerKey,'null');
-      return !!(s && o && s.email === o.email)
-    }
+  // ===== List =====
+  function renderList(){ const grid=$('#product-grid'); let items=read(dbKey,'[]'); if(!Array.isArray(items)) items=[]; grid.innerHTML=''; $('#empty-list').classList.toggle('hidden',items.length>0); items.forEach(it=>{ const el=document.createElement('article'); el.className='card'; const img=document.createElement('img'); img.className='dvd'; const cover=(Array.isArray(it.images)&&it.images[0])||it.image||''; img.src=cover||'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>'); const box=document.createElement('div'); box.className='p'; const price=Number(it.price||0), slug=it.slug||slugify(it.name); box.innerHTML='<div class="name">'+(it.name||'สินค้า')+'</div>'+'<div class="row" style="justify-content:space-between;margin-top:6px">'+'<span class="price">'+THB(price)+'</span>'+'<a class="pill" href="#/product/'+slug+'">ดูรายละเอียด</a>'+'</div>'; el.appendChild(img); el.appendChild(box); grid.appendChild(el) }) }
 
-    // routing
-    function route(){
-      const hash = location.hash || '#/'
-      const parts = hash.split('/')
-      const base = parts[1] || ''
-      $$('.view').forEach(v=>v.classList.add('hidden'))
+  // ===== Detail =====
+  function renderDetail(key){ const box=$('#detail'); const items=read(dbKey,'[]'); const it=items.find(x=>x.slug===key||x.id===key); if(!it){ box.innerHTML='<div class="empty">ไม่พบสินค้า <a href="#/">กลับหน้ารวม</a></div>'; return } const images=(Array.isArray(it.images)&&it.images.length)?it.images:(it.image?[it.image]:[]); const cover=images[0]||''; const thumbs=images.map((src,ix)=>'<img data-ix="'+ix+'" src="'+src+'" class="'+(ix===0?'active':'')+'">').join(''); const thumb=youtubeThumb(it.youtube); const embed=youtubeToEmbed(it.youtube); const ytBlock=(thumb||embed)?('<div class="playthumb" id="ytwrap" data-embed="'+(embed||'')+'" data-url="'+(it.youtube||'')+'" style="margin-top:14px;position:relative">'+(thumb?'<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">':'<div class="embed16x9" style="display:grid;place-items:center" class="muted">คลิกเพื่อเปิดวิดีโอ</div>')+'<span class="playbtn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg></span>'+'</div>') : '';
+    box.innerHTML='<div class="gallery">'+'<div class="main"><img id="main-cover" class="dvd" style="border-radius:16px;border:1px solid #24262e" src="'+(cover||'')+'" alt="'+it.name+'">'+'<div class="thumbs">'+thumbs+'</div></div>'+'<div style="flex:1">'+'<h2 style="margin:0 0 10px">'+it.name+'</h2>'+'<div class="price" style="font-size:22px;margin-bottom:10px">'+THB(it.price)+'</div>'+'<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+ ytBlock + ((!thumb&&it.youtube)?('<p style="margin-top:10px"><a class="pill" target="_blank" href="'+it.youtube+'">เปิดใน YouTube</a></p>'):'') +'<div style="display:flex;gap:10px;align-items:center;margin-top:14px">'+'<div class="qty"><button onclick="changeQty(-1)" type="button">-</button><input id="qty" type="number" min="1" value="1"><button onclick="changeQty(1)" type="button">+</button></div>'+'<button class="btn primary" onclick="addToCart(\''+it.id+'\', \''+it.slug+'\')" type="button">ใส่ตะกร้า</button>'+'<a href="#/cart" class="pill">ดูตะกร้า</a>'+'</div>'+'<div style="margin-top:6px" class="muted">สต็อกทดลอง (ไม่เชื่อมต่อหลังบ้านจริง)</div>'+'<div style="display:flex;gap:10px;margin-top:14px"><a href="#/" class="pill">⬅︎ กลับ</a></div>'+'</div>'+'</div>';
+    const main=document.getElementById('main-cover'); document.querySelectorAll('.thumbs img').forEach(img=>{ img.addEventListener('click',()=>{ const ix=Number(img.getAttribute('data-ix')||'0'); main.src=images[ix]||''; document.querySelectorAll('.thumbs img').forEach(t=>t.classList.remove('active')); img.classList.add('active') }) }); const w=document.getElementById('ytwrap'); if(w){ w.addEventListener('click',()=>{ const em=w.getAttribute('data-embed'); if(em){ w.classList.remove('playthumb'); w.innerHTML='<iframe class="embed16x9" src="'+em+'?autoplay=1&rel=0" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>' } else { const url=w.getAttribute('data-url'); if(url) window.open(url,'_blank') } }) } }
+  function changeQty(delta){ const el=document.getElementById('qty'); if(!el) return; let v=parseInt(el.value||'1',10); v=Math.max(1,v+delta); el.value=v }
 
-      const ns = $('#nav-session'); const btnLogout = $('#btn-logout')
-      if(isAuthed()){ ns.textContent = 'ล็อกอิน: ' + read(sessionKey,'null').email; btnLogout.classList.remove('hidden') } else { ns.textContent = ''; btnLogout.classList.add('hidden') }
-      updateCartCount()
+  // ===== Cart =====
+  function addToCart(id,slug){ const items=read(dbKey,'[]'); const it=items.find(x=>x.id===id||x.slug===slug); if(!it) return; const qtyEl=document.getElementById('qty'); const qty=Math.max(1,parseInt(qtyEl?.value||'1',10)); const cart=readCart(); const ix=cart.findIndex(x=>x.id===it.id); if(ix>-1){ cart[ix].qty=Number(cart[ix].qty||0)+qty } else { cart.push({ id:it.id, slug:it.slug, name:it.name, price:Number(it.price)||0, qty, image:(Array.isArray(it.images)&&it.images[0])||it.image }) } writeCart(cart); updateCartCount(); alert('เพิ่มลงตะกร้าแล้ว') }
+  function renderCart(){ const cart=readCart(); const empty=cart.length===0; $('#cart-empty').classList.toggle('hidden',!empty); $('#cart-wrap').classList.toggle('hidden',empty); if(empty) return; const table=$('#cart-table'); table.innerHTML='<tr><th>สินค้า</th><th>ราคา/ชิ้น</th><th>จำนวน</th><th>รวม</th><th></th></tr>'; let total=0; cart.forEach((it,i)=>{ const sum=Number(it.price)*Number(it.qty); total+=sum; const tr=document.createElement('tr'); tr.innerHTML='<td><div class="row" style="gap:10px;align-items:center"><img class="dvd" style="width:50px;border:1px solid #24262e;border-radius:8px" src="'+(it.image||'')+'"/><div><div class="name">'+it.name+'</div><a class="pill" href="#/product/'+it.slug+'">ดูสินค้า</a></div></div></td>'+'<td>'+THB(it.price)+'</td>'+'<td><div class="qty"><button onclick="cartChangeQty('+i+',-1)" type="button">-</button><input id="cartq'+i+'" type="number" min="1" value="'+it.qty+'"><button onclick="cartChangeQty('+i+',1)" type="button">+</button></div></td>'+'<td>'+THB(sum)+'</td>'+'<td><button class="btn" onclick="cartRemove('+i+')" type="button">ลบ</button></td>'; table.appendChild(tr) }); $('#cart-total').textContent=THB(total); $('#btn-checkout').onclick=()=>{ location.hash='#/checkout' } }
+  function cartChangeQty(i,delta){ const cart=readCart(); const input=document.getElementById('cartq'+i); if(!input) return; let v=Math.max(1,parseInt(input.value||'1',10)+delta); input.value=v; cart[i].qty=v; writeCart(cart); renderCart(); updateCartCount() }
+  function cartRemove(i){ const cart=readCart(); cart.splice(i,1); writeCart(cart); renderCart(); updateCartCount() }
 
-      if(!base){ renderList(); $('#view-list').classList.remove('hidden') }
-      else if(base==='product'){ renderDetail(parts[2]); $('#view-detail').classList.remove('hidden') }
-      else if(base==='cart'){ renderCart(); $('#view-cart').classList.remove('hidden') }
-      else if(base==='checkout'){ renderCheckout(); $('#view-checkout').classList.remove('hidden') }
-      else if(base==='thanks'){ renderThanks(parts[2]||''); $('#view-thanks').classList.remove('hidden') }
-      else if(base==='notify'){ renderNotify(); $('#view-notify').classList.remove('hidden') }
-      else if(base==='admin'){
-        if(!read(ownerKey,'null')){ location.hash = '#/setup'; return }
-        if(!isAuthed()){ location.hash = '#/login'; return }
-        $('#view-admin').classList.remove('hidden');
-        renderAdminList(); renderAdminSlips(); renderEmailCfg()
-      }
-      else if(base==='login'){ $('#view-login').classList.remove('hidden') }
-      else if(base==='setup'){ $('#view-setup').classList.remove('hidden') }
-      else { renderList(); $('#view-list').classList.remove('hidden') }
-      window.scrollTo({top:0, behavior:'instant'})
-    }
-    window.addEventListener('hashchange', route)
-    document.addEventListener('DOMContentLoaded', ()=>{ try{ migrateDB() }catch{}; try{ ensurePresetOwner() }catch{}; route() })
+  // ===== Checkout =====
+  function summarizeCart(){ const cart=readCart(); const items=cart.map(it=>({ name:it.name, qty:Number(it.qty||1), price:Number(it.price||0), sum:Number(it.price||0)*Number(it.qty||1) })); const subtotal=items.reduce((a,b)=>a+b.sum,0); const shipping=cart.length>0?50:0; const total=subtotal+shipping; return {items, subtotal, shipping, total} }
+  function renderCheckout(){ const cart=readCart(); if(cart.length===0){ location.hash='#/cart'; return } const box=$('#checkout'); const {items, subtotal, shipping, total}=summarizeCart(); let lines='<table class="table"><tr><th>สินค้า</th><th>จำนวน</th><th>ราคา</th><th>รวม</th></tr>'; items.forEach(it=>{ lines+='<tr><td>'+it.name+'</td><td>'+it.qty+'</td><td>'+THB(it.price)+'</td><td>'+THB(it.sum)+'</td></tr>' }); lines+='<tr><td colspan="3" style="text-align:right">รวมค่าสินค้า</td><td>'+THB(subtotal)+'</td></tr>'; lines+='<tr><td colspan="3" style="text-align:right">ค่าส่ง (เหมาจ่าย)</td><td>'+THB(shipping)+'</td></tr>'; lines+='<tr><td colspan="3" style="text-align:right;font-weight:800">ยอดชำระ</td><td class="total">'+THB(total)+'</td></tr></table>'; box.innerHTML=`<form id="checkout-form"><div class="two"><label>ชื่อ<input id="co-first" required></label><label>นามสกุล<input id="co-last" required></label></div><label>ที่อยู่จัดส่ง<textarea id="co-addr" rows="3" required></textarea></label><div class="two"><label>เบอร์โทรศัพท์<input id="co-tel" required></label><label>อีเมลผู้รับสินค้า<input id="co-email" type="email" required></label></div><h3>สรุปคำสั่งซื้อ</h3>${lines}<h3>วิธีชำระเงิน</h3><label><input type="radio" name="pay" value="bank" checked> โอนเงินเข้าบัญชี (ธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล)</label><label><input type="radio" name="pay" value="paypal"> PayPal (ชำระไปที่อีเมลร้าน: ${PRESET_OWNER.email})</label><div class="row" style="justify-content:space-between;margin-top:12px"><a class="pill" href="#/cart">⬅︎ กลับตะกร้า</a><button class="btn primary" type="submit">ยืนยันสั่งซื้อ</button></div></form>`; const form=$('#checkout-form'); form.addEventListener('submit',e=>{ e.preventDefault(); const first=$('#co-first').value.trim(), last=$('#co-last').value.trim(), address=$('#co-addr').value.trim(), phone=$('#co-tel').value.trim(), email=$('#co-email').value.trim(); const method=(document.querySelector('input[name="pay"]:checked')||{value:'bank'}).value; const orderId='ORD-'+Date.now().toString(36).toUpperCase(); const summary=summarizeCart(); const order={ id:orderId, first,last,address,phone,email,method, ...summary, cart:readCart() }; const orders=readOrders(); orders.unshift(order); writeOrders(orders); if(method==='bank'){ const subject='วิธีชำระเงินสำหรับคำสั่งซื้อ '+orderId; const body=bankEmailBody(order); sendEmail(email,subject,body); alert('เราได้เตรียมอีเมลชำระเงินให้คุณแล้ว โปรดแนบสลิปหลังโอน') } else { const subject='คำสั่งซื้อ '+orderId+' – ชำระผ่าน PayPal'; const body=paypalEmailBody(order); sendEmail(email,subject,body) } writeCart([]); updateCartCount(); location.hash='#/thanks/'+orderId }) }) }
+  function bankEmailBody(order){ const lines=order.items.map(it=>`• ${it.name} x ${it.qty} = ${THB(it.sum)}`).join('\n'); return `สวัสดี ${order.first} ${order.last}\n\nรายละเอียดคำสั่งซื้อ ${order.id}\n${lines}\nรวมค่าสินค้า: ${THB(order.subtotal)}\nค่าส่ง (เหมาจ่าย): ${THB(order.shipping)}\nยอดชำระทั้งหมด: ${THB(order.total)}\n\nกรุณาโอนเงินเข้าบัญชี\nธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล\n\nหลังโอน โปรดตอบกลับอีเมลนี้พร้อมแนบสลิป เพื่อยืนยันการชำระเงิน\n\nที่อยู่จัดส่ง:\n${order.address}\nเบอร์โทร: ${order.phone}\n\nขอบคุณครับ/ค่ะ\nMini Shop` }
+  function paypalEmailBody(order){ const lines=order.items.map(it=>`• ${it.name} x ${it.qty} = ${THB(it.sum)}`).join('\n'); return `สวัสดี ${order.first} ${order.last}\n\nรายละเอียดคำสั่งซื้อ ${order.id}\n${lines}\นรวมค่าสินค้า: ${THB(order.subtotal)}\nค่าส่ง (เหมาจ่าย): ${THB(order.shipping)}\nยอดชำระทั้งหมด: ${THB(order.total)}\n\nโปรดชำระผ่าน PayPal ไปที่อีเมลร้าน: ${PRESET_OWNER.email}\nชำระเสร็จแล้วโปรดตอบกลับอีเมลนี้พร้อมแนบสลิป\n\nที่อยู่จัดส่ง:\n${order.address}\nเบอร์โทร: ${order.phone}\n\nขอบคุณครับ/ค่ะ\nMini Shop` }
+  function renderThanks(id){ const box=$('#thanksbox'); box.innerHTML='<h2>รับคำสั่งซื้อแล้ว</h2><p>เลขคำสั่งซื้อ: <strong>'+id+'</strong></p><p>เราได้เปิดหน้าต่างอีเมลพร้อมรายละเอียดให้แล้ว โปรดตรวจสอบกล่องจดหมายของคุณ</p><div style="margin-top:10px"><a class="pill" href="#/">กลับหน้าร้าน</a></div>' }
 
-    // list
-    function renderList(){
-      const grid = $('#product-grid'); let items = read(dbKey,'[]')
-      if(!Array.isArray(items)) items = []
-      grid.innerHTML = ''
-      $('#empty-list').classList.toggle('hidden', items.length>0)
-      items.forEach(it=>{
-        const el = document.createElement('article'); el.className='card'
-        const img = document.createElement('img'); img.className='dvd'
-        const cover = (Array.isArray(it.images) && it.images[0]) || it.image || ''
-        img.src = cover || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>')
-        const box = document.createElement('div'); box.className='p'
-        const price = Number(it.price||0)
-        const slug = it.slug || slugify(it.name)
-        box.innerHTML = '<div class="name">'+(it.name||'สินค้า')+'</div>'+
-          '<div class="row" style="justify-content:space-between;margin-top:6px">'+
-          '<span class="price">฿'+price.toLocaleString('th-TH')+'</span>'+
-          '<a class="pill" href="#/product/'+slug+'">ดูรายละเอียด</a>'+
-          '</div>'
-        el.appendChild(img); el.appendChild(box); grid.appendChild(el)
-      })
-    }
+  // ===== Notify Transfer =====
+  function renderNotify(){ const box=$('#notify'); box.innerHTML=`<form id="notify-form"><label>อีเมลผู้สั่งซื้อ<input id="slip-email" type="email" required></label><label>หมายเลขคำสั่งซื้อ (ถ้ามี)<input id="slip-order" placeholder="ORD-XXXX"></label><div class="two"><label>วันเวลาโอน<input id="slip-dt" type="datetime-local" required></label><label>แนบสลิป (ภาพ)<input id="slip-img" type="file" accept="image/*" capture="environment" required></label></div><div class="row" style="justify-content:space-between;margin-top:12px"><a class="pill" href="#/">⬅︎ กลับหน้าร้าน</a><button class="btn primary" type="submit">แจ้งโอน</button></div></form>`; $('#notify-form').addEventListener('submit',async e=>{ e.preventDefault(); const email=$('#slip-email').value.trim(), orderId=$('#slip-order').value.trim(), dt=$('#slip-dt').value, file=$('#slip-img').files?.[0]; if(!file){ alert('โปรดแนบสลิป'); return } const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file) }); const slip={ id:'SLIP-'+Date.now().toString(36).toUpperCase(), email, orderId, dt, image:dataUrl, checked:false, createdAt:Date.now() }; const slips=readSlips(); slips.unshift(slip); writeSlips(slips); alert('ส่งแจ้งโอนเรียบร้อย ขอบคุณค่ะ/ครับ'); location.hash='#/' }) }
+  function renderAdminSlips(){ const wrap=$('#admin-slips'); const slips=readSlips(); if(!Array.isArray(slips)||slips.length===0){ wrap.innerHTML='<div class="empty">ยังไม่มีการแจ้งโอน</div>'; return } let html='<table class="table"><tr><th>เวลา</th><th>อีเมล</th><th>คำสั่งซื้อ</th><th>สถานะ</th></tr>'; slips.slice(0,10).forEach(s=>{ const dt=new Date(s.createdAt||Date.now()).toLocaleString('th-TH'); html+='<tr><td>'+dt+'</td><td>'+(s.email||'-')+'</td><td>'+(s.orderId||'-')+'</td><td>'+(s.checked?'ตรวจแล้ว':'รอตรวจ')+'</td></tr>' }); html+='</table>'; wrap.innerHTML=html }
 
-    // detail
-    function renderDetail(key){
-      const box = $('#detail'); const items = read(dbKey,'[]')
-      const it = items.find(x=>x.slug===key || x.id===key)
-      if(!it){ box.innerHTML = '<div class="empty">ไม่พบสินค้า <a href="#/">กลับหน้ารวม</a></div>'; return }
-      const images = Array.isArray(it.images) && it.images.length ? it.images : (it.image ? [it.image] : [])
-      const cover = images[0] || ''
-      const thumbs = images.map((src,ix)=>'<img data-ix="'+ix+'" src="'+src+'" class="'+(ix===0?'active':'')+'">').join('')
-      const thumb = youtubeThumb(it.youtube)
-      const embed = youtubeToEmbed(it.youtube)
-      const ytBlock = (thumb || embed) ? (
-        '<div class="playthumb" id="ytwrap" data-embed="'+(embed||'')+'" data-url="'+(it.youtube||'')+'" style="margin-top:14px;position:relative">'+
-          (thumb ? '<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">' : '<div class="embed16x9" style="display:grid;place-items:center" class="muted">คลิกเพื่อเปิดวิดีโอ</div>')+
-          '<span class="playbtn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg></span>'+
-        '</div>'
-      ) : ''
+  // ===== Admin: list/edit/save =====
+  function renderAdminList(){ const wrap=$('#admin-list'); const items=read(dbKey,'[]'); if(!Array.isArray(items)||items.length===0){ wrap.innerHTML='<div class="empty">ยังไม่มีสินค้า</div>'; return } let html='<table class="table"><tr><th>สินค้า</th><th>ราคา</th><th>เมื่อ</th><th></th></tr>'; items.forEach((it,i)=>{ const date=new Date(it.createdAt||Date.now()).toLocaleString('th-TH'); html+='<tr style="cursor:pointer" onclick="adminEdit('+i+')"><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'" onclick="event.stopPropagation()">ดู</a> <button class="btn" type="button" onclick="event.stopPropagation(); adminEdit('+i+')">แก้ไข</button> <button class="btn" type="button" onclick="event.stopPropagation(); adminDelete('+i+')">ลบ</button></td></tr>' }); html+='</table>'; wrap.innerHTML=html }
+  function adminDelete(i){ if(!confirm('ลบสินค้านี้?')) return; const items=read(dbKey,'[]'); items.splice(i,1); write(dbKey,items); renderAdminList(); renderList() }
+  function renderImgTray(){ const tray=$('#img-tray'); const form=$('#product-form'); const arr=(()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })(); if(!arr.length){ tray.innerHTML='<span class="muted">ยังไม่มีภาพ</span>'; return } tray.innerHTML=arr.map((src,ix)=>'<div class="itm"><img src="'+src+'"/>'+(ix===0?'<span class="badge-mini cover">ปก</span>':'')+'<div class="tools">'+(ix>0?'<button class="btn" type="button" onclick="imgSetCover('+ix+')">ปก↑</button>':'')+'<button class="btn" type="button" onclick="imgDelete('+ix+')">ลบ</button></div></div>').join('') }
+  function imgSetCover(ix){ const form=$('#product-form'); let arr=(()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })(); if(ix<=0||ix>=arr.length) return; const [it]=arr.splice(ix,1); arr.unshift(it); form.dataset.existingImages=JSON.stringify(arr); renderImgTray() }
+  function imgDelete(ix){ const form=$('#product-form'); let arr=(()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })(); arr.splice(ix,1); form.dataset.existingImages=JSON.stringify(arr); renderImgTray() }
+  function adminEdit(i){ const items=read(dbKey,'[]'); const it=items[i]; const form=$('#product-form'); form.dataset.editIndex=String(i); form.dataset.existingImages=JSON.stringify(it.images||(it.image?[it.image]:[])); renderImgTray(); $('#f-name').value=it.name||''; $('#f-price').value=it.price||0; $('#f-desc').value=it.desc||''; $('#f-yt').value=it.youtube||''; $('#btn-submit-product').textContent='อัปเดตสินค้า'; $('#btn-cancel-edit').classList.remove('hidden'); window.scrollTo({top:form.getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'}) }
+  function exitEditMode(){ const form=$('#product-form'); delete form.dataset.editIndex; delete form.dataset.existingImages; form.reset(); $('#img-tray').innerHTML=''; $('#btn-submit-product').textContent='บันทึกสินค้า'; $('#btn-cancel-edit').classList.add('hidden') }
 
-      box.innerHTML = '<div class="gallery">'+
-        '<div class="main"><img id="main-cover" class="dvd" style="border-radius:16px;border:1px solid #24262e" src="'+(cover||'')+'" alt="'+it.name+'">'+
-        '<div class="thumbs">'+thumbs+'</div></div>'+
-        '<div style="flex:1">'+
-          '<h2 style="margin:0 0 10px">'+it.name+'</h2>'+
-          '<div class="price" style="font-size:22px;margin-bottom:10px">฿'+Number(it.price).toLocaleString('th-TH')+'</div>'+
-          '<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+ ytBlock + ( (!thumb && it.youtube) ? ('<p style="margin-top:10px"><a class="pill" target="_blank" href="'+it.youtube+'">เปิดใน YouTube</a></p>') : '' ) +
-          '<div style="display:flex;gap:10px;align-items:center;margin-top:14px">'+
-            '<div class="qty"><button onclick="changeQty(-1)" type="button">-</button><input id="qty" type="number" min="1" value="1"><button onclick="changeQty(1)" type="button">+</button></div>'+
-            '<button class="btn primary" onclick="addToCart(\''+it.id+'\', \''+it.slug+'\')" type="button">ใส่ตะกร้า</button>'+
-            '<a href="#/cart" class="pill">ดูตะกร้า</a>'+
-          '</div>'+
-          '<div style="margin-top:6px" class="muted">สต็อกทดลอง (ไม่เชื่อมต่อหลังบ้านจริง)</div>'+
-          '<div style="display:flex;gap:10px;margin-top:14px"><a href="#/" class="pill">⬅︎ กลับ</a></div>'+
-        '</div>'+
-      '</div>'
+  const form=$('#product-form'); if(form){ const cancelBtn=$('#btn-cancel-edit'); cancelBtn.addEventListener('click',()=>exitEditMode()); const fi=$('#f-img'); fi.addEventListener('change',async()=>{ if(!fi.files||fi.files.length===0) return; const add=await Promise.all(Array.from(fi.files).slice(0,5).map(f=>new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f) }))); const arr=(()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })(); const merged=arr.concat(add).slice(0,5); form.dataset.existingImages=JSON.stringify(merged); fi.value=''; renderImgTray() }); form.addEventListener('submit',async e=>{ e.preventDefault(); if(!isAuthed()){ alert('โปรดล็อกอินก่อน'); location.hash='#/login'; return } const name=$('#f-name').value.trim(); const price=$('#f-price').value||0; const desc=$('#f-desc').value.trim(); const youtube=($('#f-yt')?.value||'').trim(); const images=(()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })().slice(0,5); const cover=images[0]||''; const items=read(dbKey,'[]'); if(form.dataset.editIndex){ const idx=Number(form.dataset.editIndex); const original=items[idx]; if(!original){ alert('ไม่พบสินค้าต้นฉบับ'); return } const updated={...original,name,price,desc,youtube,images,image:cover,slug:slugify(name)}; items[idx]=updated; write(dbKey,items); alert('อัปเดตสินค้าแล้ว'); exitEditMode(); renderAdminList(); renderList(); location.hash='#/product/'+updated.slug; route() } else { const item={id:uid(),name,price,desc,youtube,images,image:cover,slug:slugify(name),createdAt:Date.now()}; items.unshift(item); write(dbKey,items); exitEditMode(); alert('บันทึกสินค้าสำเร็จ'); renderAdminList(); renderList(); location.hash='#/product/'+item.slug; route() } }) }
 
-      const main = document.getElementById('main-cover')
-      document.querySelectorAll('.thumbs img').forEach(img=>{
-        img.addEventListener('click', ()=>{
-          const ix = Number(img.getAttribute('data-ix')||'0')
-          main.src = images[ix]||''
-          document.querySelectorAll('.thumbs img').forEach(t=>t.classList.remove('active'))
-          img.classList.add('active')
-        })
-      })
+  // ===== Email (EmailJS optional -> fallback mailto) =====
+  const emailCfgKey='mini-shop.emailcfg.v1'; const getEmailCfg=()=>read(emailCfgKey,'null');
+  async function loadEmailJS(publicKey){ if(window.emailjs){ try{ emailjs.init({publicKey}); }catch{} return } await new Promise((res)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'; s.onload=()=>{ try{ emailjs.init({publicKey}); res() }catch{ res() } }; s.onerror=res; document.head.appendChild(s) }) }
+  async function sendEmail(to,subject,message){ const cfg=getEmailCfg(); if(cfg&&cfg.publicKey&&cfg.serviceId&&cfg.templateId){ try{ await loadEmailJS(cfg.publicKey); await emailjs.send(cfg.serviceId,cfg.templateId,{to_email:to,subject,message}); return true }catch(e){ console.error('emailjs',e) } } const mailto='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message); window.open(mailto,'_blank'); return false }
 
-      const w = document.getElementById('ytwrap');
-      if(w){ w.addEventListener('click', ()=>{
-        const em = w.getAttribute('data-embed');
-        if(em){
-          w.classList.remove('playthumb');
-          w.innerHTML = '<iframe class="embed16x9" src="'+em+'?autoplay=1&rel=0" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'
-        } else {
-          const url = w.getAttribute('data-url'); if(url) window.open(url, '_blank')
-        }
-      }) }
-      }
-    }
-    function changeQty(delta){
-      const el = document.getElementById('qty'); if(!el) return;
-      let v = parseInt(el.value||'1',10); v = Math.max(1, v+delta); el.value = v
-    }
+  // ===== Logout/Login/Setup =====
+  $('#btn-logout').addEventListener('click',()=>{ localStorage.removeItem(sessionKey); alert('ออกจากระบบแล้ว'); route() })
+  const loginForm=$('#login-form'); if(loginForm){ loginForm.addEventListener('submit',async e=>{ e.preventDefault(); const email=$('#login-email').value.trim().toLowerCase(); const pass=$('#login-pass').value; const o=read(ownerKey,'null'); const msg=$('#login-msg'); msg.textContent=''; if(!o){ msg.textContent='ยังไม่ได้ตั้งค่าเจ้าของร้าน ไปที่ ตั้งค่าครั้งแรก'; return } const hash=await sha256(pass+o.salt); if(email===o.email && hash===o.hash){ write(sessionKey,{email,at:Date.now()}); location.hash='#/admin'; route() } else { msg.textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง' } }) }
+  const setupForm=$('#setup-form'); if(setupForm){ setupForm.addEventListener('submit',async e=>{ e.preventDefault(); const email=$('#setup-email').value.trim().toLowerCase(); const p1=$('#setup-pass').value; const p2=$('#setup-pass2').value; const msg=$('#setup-msg'); msg.textContent=''; if(p1.length<6){ msg.textContent='รหัสผ่านควรยาวอย่างน้อย 6 ตัว'; return } if(p1!==p2){ msg.textContent='รหัสผ่านไม่ตรงกัน'; return } const salt=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2); const hash=await sha256(p1+salt); write(ownerKey,{email,salt,hash}); write(sessionKey,{email,at:Date.now()}); alert('ตั้งค่าเสร็จและล็อกอินแล้ว'); location.hash='#/admin'; route() }) }
 
-    // auth ui
-    $('#btn-logout')?.addEventListener('click', ()=>{ localStorage.removeItem(sessionKey); alert('ออกจากระบบแล้ว'); route() })
-
-    const loginForm = $('#login-form'); if(loginForm){ loginForm.addEventListener('submit', async e=>{
-      e.preventDefault()
-      const email = $('#login-email').value.trim().toLowerCase()
-      const pass = $('#login-pass').value
-      const o = read(ownerKey,'null'); const msg = $('#login-msg'); msg.textContent = ''
-      if(!o){ msg.textContent = 'ยังไม่ได้ตั้งค่าเจ้าของร้าน ไปที่ ตั้งค่าครั้งแรก'; return }
-      const hash = await sha256(pass + o.salt)
-      if(email===o.email && hash===o.hash){ write(sessionKey,{email,at:Date.now()}); location.hash = '#/admin'; route() }
-      else { msg.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
-    })}
-
-    const setupForm = $('#setup-form'); if(setupForm){ setupForm.addEventListener('submit', async e=>{
-      e.preventDefault()
-      const email = $('#setup-email').value.trim().toLowerCase(); const p1 = $('#setup-pass').value; const p2 = $('#setup-pass2').value
-      const msg = $('#setup-msg'); msg.textContent = ''
-      if(p1.length<6){ msg.textContent='รหัสผ่านควรยาวอย่างน้อย 6 ตัว'; return }
-      if(p1!==p2){ msg.textContent='รหัสผ่านไม่ตรงกัน'; return }
-      const salt = Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)
-      const hash = await sha256(p1 + salt)
-      write(ownerKey,{email,salt,hash}); write(sessionKey,{email,at:Date.now()})
-      alert('ตั้งค่าเสร็จและล็อกอินแล้ว'); location.hash = '#/admin'; route()
-    })}
-
-    // helpers: admin image tray
-    function renderImgTray(){
-      const tray = document.getElementById('img-tray'); if(!tray) return
-      const form = $('#product-form'); const arr = (()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })()
-      if(!arr.length){ tray.innerHTML = '<span class="muted">ยังไม่มีภาพ</span>'; return }
-      tray.innerHTML = arr.map((src,ix)=>
-        '<div class="itm">'+
-          '<img src="'+src+'"/>'+
-          (ix===0?'<span class="badge-mini cover">ปก</span>':'')+
-          '<div class="tools">'+
-            (ix>0?'<button class="btn" type="button" onclick="imgSetCover('+ix+')">ปก↑</button>':'')+
-            '<button class="btn" type="button" onclick="imgDelete('+ix+')">ลบ</button>'+
-          '</div>'+
-        '</div>'
-      ).join('')
-    }
-    function imgSetCover(ix){
-      const form = $('#product-form'); let arr = (()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })()
-      if(ix<=0||ix>=arr.length) return; const [it] = arr.splice(ix,1); arr.unshift(it); form.dataset.existingImages = JSON.stringify(arr); renderImgTray()
-    }
-    function imgDelete(ix){
-      const form = $('#product-form'); let arr = (()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })()
-      arr.splice(ix,1); form.dataset.existingImages = JSON.stringify(arr); renderImgTray()
-    }
-
-    // admin submit (save/update product)
-    const form = $('#product-form'); if(form){
-      const cancelBtn = document.getElementById('btn-cancel-edit'); cancelBtn?.addEventListener('click', ()=> exitEditMode())
-      // when pick new files → append to tray (max 5)
-      const fi = document.getElementById('f-img'); fi?.addEventListener('change', async ()=>{
-        if(!fi.files || fi.files.length===0) return
-        const add = await Promise.all(Array.from(fi.files).slice(0,5).map(f=> new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f) })))
-        const arr = (()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })()
-        const merged = arr.concat(add).slice(0,5)
-        form.dataset.existingImages = JSON.stringify(merged); fi.value=''; renderImgTray()
-      })
-
-      form.addEventListener('submit', async e=>{
-        e.preventDefault()
-        if(!isAuthed()){ alert('โปรดล็อกอินก่อน'); location.hash = '#/login'; return }
-        const name = $('#f-name').value.trim(); const price = $('#f-price').value || 0; const desc = $('#f-desc').value.trim(); const youtube = ($('#f-yt')?.value||'').trim()
-        const existing = (()=>{ try{return JSON.parse(form?.dataset.existingImages||'[]')}catch{return []} })()
-        const images = existing.slice(0,5)
-        const cover = images[0] || ''
-        const items = read(dbKey,'[]')
-        if(form.dataset.editIndex){
-          const idx = Number(form.dataset.editIndex); const original = items[idx]; if(!original){ alert('ไม่พบสินค้าต้นฉบับ'); return }
-          const updated = { ...original, name, price, desc, youtube, images, image: cover, slug: slugify(name) }
-          items[idx] = updated; write(dbKey, items)
-          alert('อัปเดตสินค้าแล้ว')
-          exitEditMode(); renderAdminList(); renderList(); location.hash = '#/product/'+updated.slug; route()
-        } else {
-          const item = {id: uid(), name, price, desc, youtube, images, image: cover, slug: slugify(name), createdAt: Date.now()}
-          items.unshift(item); write(dbKey, items)
-          exitEditMode(); alert('บันทึกสินค้าสำเร็จ'); renderAdminList(); renderList(); location.hash = '#/product/'+item.slug; route()
-        }
-      })
-    }
-
-    // cart store
-    const cartKey = 'mini-shop.cart.v1'
-    const readCart = ()=> read(cartKey,'[]')
-    const writeCart = (c)=> write(cartKey,c)
-    function cartCount(){ return readCart().reduce((n,i)=>n+Number(i.qty||0),0) }
-    function updateCartCount(){ const el=$('#cart-count'); if(el) el.textContent = cartCount() }
-
-    function addToCart(id, slug){
-      const items = read(dbKey,'[]'); const it = items.find(x=>x.id===id || x.slug===slug); if(!it) return;
-      const qtyEl = document.getElementById('qty'); const qty = Math.max(1, parseInt(qtyEl?.value||'1',10))
-      const cart = readCart();
-      const ix = cart.findIndex(x=>x.id===it.id)
-      if(ix>-1){ cart[ix].qty = Number(cart[ix].qty||0) + qty }
-      else { cart.push({ id: it.id, slug: it.slug, name: it.name, price: Number(it.price)||0, qty, image: (Array.isArray(it.images)&&it.images[0]) || it.image }) }
-      writeCart(cart); updateCartCount(); alert('เพิ่มลงตะกร้าแล้ว')
-    }
-
-    function renderCart(){
-      const cart = readCart(); const empty = cart.length===0
-      $('#cart-empty').classList.toggle('hidden', !empty)
-      $('#cart-wrap').classList.toggle('hidden', empty)
-      if(empty) return
-      const table = $('#cart-table');
-      table.innerHTML = '<tr><th>สินค้า</th><th>ราคา/ชิ้น</th><th>จำนวน</th><th>รวม</th><th></th></tr>'
-      let total = 0
-      cart.forEach((it,i)=>{
-        const sum = Number(it.price)*Number(it.qty); total += sum
-        const tr = document.createElement('tr')
-        tr.innerHTML =
-          '<td><div class="row" style="gap:10px;align-items:center"><img class="dvd" style="width:50px;border:1px solid #24262e;border-radius:8px" src="'+(it.image||'')+'"/><div><div class="name">'+it.name+'</div><a class="pill" href="#/product/'+it.slug+'">ดูสินค้า</a></div></div></td>'+
-          '<td>฿'+Number(it.price).toLocaleString('th-TH')+'</td>'+
-          '<td><div class="qty"><button onclick="cartChangeQty('+i+',-1)" type="button">-</button><input id="cartq'+i+'" type="number" min="1" value="'+it.qty+'"><button onclick="cartChangeQty('+i+',1)" type="button">+</button></div></td>'+
-          '<td>฿'+sum.toLocaleString('th-TH')+'</td>'+
-          '<td><button class="btn" onclick="cartRemove('+i+')" type="button">ลบ</button></td>'
-        table.appendChild(tr)
-      })
-      $('#cart-total').textContent = '฿'+total.toLocaleString('th-TH')
-    }
-    function cartChangeQty(i,delta){
-      const cart = readCart(); const input = document.getElementById('cartq'+i); if(!input) return;
-      let v = Math.max(1, parseInt(input.value||'1',10)+delta); input.value=v; cart[i].qty=v; writeCart(cart); renderCart(); updateCartCount()
-    }
-    function cartRemove(i){ const cart = readCart(); cart.splice(i,1); writeCart(cart); renderCart(); updateCartCount() }
-
-    const btnClear = $('#btn-clear'); if(btnClear){ btnClear.addEventListener('click', ()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList(); renderAdminList() } }) }
-
-    // === NEW: Orders/Checkout/Admin list helpers ===
-    const ordersKey = 'mini-shop.orders.v1'
-    const readOrders = ()=> read(ordersKey,'[]')
-    const writeOrders = (o)=> write(ordersKey,o)
-    const THB = n => '฿'+Number(n||0).toLocaleString('th-TH')
-
-    // slips store
-    const slipsKey = 'mini-shop.slips.v1'
-    const readSlips = ()=> read(slipsKey,'[]')
-    const writeSlips = (s)=> write(slipsKey,s)
-
-    function renderAdminList(){
-      const wrap = $('#admin-list'); if(!wrap) return
-      const items = read(dbKey,'[]');
-      if(!Array.isArray(items) || items.length===0){ wrap.innerHTML = '<div class="empty">ยังไม่มีสินค้า</div>'; return }
-      let html = '<table class="table"><tr><th>สินค้า</th><th>ราคา</th><th>เมื่อ</th><th></th></tr>'
-      items.forEach((it,i)=>{
-        const date = new Date(it.createdAt||Date.now()).toLocaleString('th-TH')
-        html += '<tr style="cursor:pointer" onclick="adminEdit('+i+')"><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'" onclick="event.stopPropagation()">ดู</a> <button class="btn" type="button" onclick="event.stopPropagation(); adminEdit('+i+')">แก้ไข</button> <button class="btn" type="button" onclick="event.stopPropagation(); adminDelete('+i+')">ลบ</button></td></tr>'
-      })
-      html += '</table>'
-      wrap.innerHTML = html
-    }
-    function adminDelete(i){
-      if(!confirm('ลบสินค้านี้?')) return
-      const items = read(dbKey,'[]'); items.splice(i,1); write(dbKey,items); renderAdminList(); renderList()
-    }
-    function adminEdit(i){
-      const items = read(dbKey,'[]'); const it = items[i]; if(!it) return
-      const form = $('#product-form'); if(!form) return
-      form.dataset.editIndex = String(i)
-      form.dataset.existingImages = JSON.stringify(it.images || (it.image ? [it.image] : [])); renderImgTray()
-      $('#f-name').value = it.name || ''
-      $('#f-price').value = it.price || 0
-      $('#f-desc').value = it.desc || ''
-      $('#f-yt').value = it.youtube || ''
-      const submitBtn = document.getElementById('btn-submit-product'); if(submitBtn) submitBtn.textContent = 'อัปเดตสินค้า'
-      const cancelBtn = document.getElementById('btn-cancel-edit'); cancelBtn?.classList.remove('hidden')
-      window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
-    }
-    function exitEditMode(){
-      const form = $('#product-form'); if(!form) return
-      delete form.dataset.editIndex; delete form.dataset.existingImages
-      form.reset(); const tray=$('#img-tray'); if(tray) tray.innerHTML=''
-      const submitBtn = document.getElementById('btn-submit-product'); if(submitBtn) submitBtn.textContent = 'บันทึกสินค้า'
-      const cancelBtn = document.getElementById('btn-cancel-edit'); cancelBtn?.classList.add('hidden')
-    }
-
-    function summarizeCart(){
-      const cart = readCart();
-      const items = cart.map(it=>({ name: it.name, qty: Number(it.qty||1), price: Number(it.price||0), sum: Number(it.price||0)*Number(it.qty||1) }))
-      const subtotal = items.reduce((a,b)=>a+b.sum,0)
-      const shipping = cart.length>0 ? 50 : 0
-      const total = subtotal + shipping
-      return {items, subtotal, shipping, total}
-    }
-
-    function renderCheckout(){
-      const cart = readCart();
-      if(cart.length===0){ location.hash = '#/cart'; return }
-      const box = document.getElementById('checkout'); if(!box) return
-      const {items, subtotal, shipping, total} = summarizeCart()
-      let lines = '<table class="table"><tr><th>สินค้า</th><th>จำนวน</th><th>ราคา</th><th>รวม</th></tr>'
-      items.forEach(it=>{ lines += '<tr><td>'+it.name+'</td><td>'+it.qty+'</td><td>'+THB(it.price)+'</td><td>'+THB(it.sum)+'</td></tr>' })
-      lines += '<tr><td colspan="3" style="text-align:right">รวมค่าสินค้า</td><td>'+THB(subtotal)+'</td></tr>'
-      lines += '<tr><td colspan="3" style="text-align:right">ค่าส่ง (เหมาจ่าย)</td><td>'+THB(shipping)+'</td></tr>'
-      lines += '<tr><td colspan="3" style="text-align:right;font-weight:800">ยอดชำระ</td><td class="total">'+THB(total)+'</td></tr>'
-      lines += '</table>'
-
-      box.innerHTML = `
-        <form id="checkout-form">
-          <div class="two">
-            <label>ชื่อ<input id="co-first" required></label>
-            <label>นามสกุล<input id="co-last" required></label>
-          </div>
-          <label>ที่อยู่จัดส่ง<textarea id="co-addr" rows="3" required></textarea></label>
-          <div class="two">
-            <label>เบอร์โทรศัพท์<input id="co-tel" required></label>
-            <label>อีเมลผู้รับสินค้า<input id="co-email" type="email" required></label>
-          </div>
-          <h3>สรุปคำสั่งซื้อ</h3>
-          ${lines}
-          <h3>วิธีชำระเงิน</h3>
-          <label><input type="radio" name="pay" value="bank" checked> โอนเงินเข้าบัญชี (ธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล)</label>
-          <label><input type="radio" name="pay" value="paypal"> PayPal (ชำระไปที่อีเมลร้าน: ${PRESET_OWNER.email})</label>
-          <div class="row" style="justify-content:space-between;margin-top:12px">
-            <a class="pill" href="#/cart">⬅︎ กลับตะกร้า</a>
-            <button class="btn primary" type="submit">ยืนยันสั่งซื้อ</button>
-          </div>
-        </form>
-      `
-
-      const form = document.getElementById('checkout-form')
-      form?.addEventListener('submit', (e)=>{
-        e.preventDefault()
-        const first = document.getElementById('co-first').value.trim()
-        const last = document.getElementById('co-last').value.trim()
-        const address = document.getElementById('co-addr').value.trim()
-        const phone = document.getElementById('co-tel').value.trim()
-        const email = document.getElementById('co-email').value.trim()
-        const method = (document.querySelector('input[name="pay"]:checked')||{value:'bank'}).value
-        const orderId = 'ORD-' + Date.now().toString(36).toUpperCase()
-        const summary = summarizeCart()
-        const cart = readCart()
-        const order = {id: orderId, first, last, address, phone, email, method, ...summary, cart}
-        const orders = readOrders(); orders.unshift(order); writeOrders(orders)
-
-        if(method==='bank'){
-          const subject = 'วิธีชำระเงินสำหรับคำสั่งซื้อ '+orderId
-          const body = bankEmailBody(order)
-          const mailto = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)
-          sendEmail(email, subject, body)
-          alert('เราได้เตรียมอีเมลชำระเงินให้คุณแล้ว โปรดแนบสลิปหลังโอน')
-        }else{
-          const subject = 'คำสั่งซื้อ '+orderId+' – ชำระผ่าน PayPal'
-          const body = paypalEmailBody(order)
-          const mailto = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)
-          sendEmail(email, subject, body)
-        }
-
-        writeCart([]); updateCartCount()
-        location.hash = '#/thanks/'+orderId
-      })
-    }
-
-    function bankEmailBody(order){
-      const lines = order.items.map(it => `• ${it.name} x ${it.qty} = ${THB(it.sum)}`).join('\n')
-      return (
-        `สวัสดี ${order.first} ${order.last}
-
-`+
-        `รายละเอียดคำสั่งซื้อ ${order.id}
-${lines}
-`+
-        `รวมค่าสินค้า: ${THB(order.subtotal)}
-`+
-        `ค่าส่ง (เหมาจ่าย): ${THB(order.shipping)}
-`+
-        `ยอดชำระทั้งหมด: ${THB(order.total)}
-
-`+
-        `กรุณาโอนเงินเข้าบัญชี
-ธ.กรุงเทพ 047-007-8908 อาทิตย์ เลิศรักษ์มงคล
-
-`+
-        `หลังโอน โปรดตอบกลับอีเมลนี้พร้อมแนบสลิป เพื่อยืนยันการชำระเงิน
-
-`+
-        `ที่อยู่จัดส่ง:
-${order.address}
-เบอร์โทร: ${order.phone}
-
-ขอบคุณครับ/ค่ะ
-Mini Shop`
-      )
-    }
-    function paypalEmailBody(order){
-      const lines = order.items.map(it => `• ${it.name} x ${it.qty} = ${THB(it.sum)}`).join('\n')
-      return (
-        `สวัสดี ${order.first} ${order.last}
-
-`+
-        `รายละเอียดคำสั่งซื้อ ${order.id}
-${lines}
-`+
-        `รวมค่าสินค้า: ${THB(order.subtotal)}
-`+
-        `ค่าส่ง (เหมาจ่าย): ${THB(order.shipping)}
-`+
-        `ยอดชำระทั้งหมด: ${THB(order.total)}
-
-`+
-        `โปรดชำระผ่าน PayPal ไปที่อีเมลร้าน: ${PRESET_OWNER.email}
-`+
-        `ชำระเสร็จแล้วโปรดตอบกลับอีเมลนี้พร้อมแนบสลิป
-
-`+
-        `ที่อยู่จัดส่ง:
-${order.address}
-เบอร์โทร: ${order.phone}
-
-ขอบคุณครับ/ค่ะ
-Mini Shop`
-      )
-    }
-
-    function renderThanks(id){
-      const box = document.getElementById('thanksbox'); if(!box) return
-      box.innerHTML = '<h2>รับคำสั่งซื้อแล้ว</h2><p>เลขคำสั่งซื้อ: <strong>'+id+'</strong></p><p>เราได้เปิดหน้าต่างอีเมลพร้อมรายละเอียดให้แล้ว โปรดตรวจสอบกล่องจดหมายของคุณ</p><div style="margin-top:10px"><a class="pill" href="#/">กลับหน้าร้าน</a></div>'
-    }
-
-    // Notify Transfer page
-    function renderNotify(){
-      const box = document.getElementById('notify'); if(!box) return
-      box.innerHTML = `
-        <form id="notify-form">
-          <label>อีเมลผู้สั่งซื้อ<input id="slip-email" type="email" required></label>
-          <label>หมายเลขคำสั่งซื้อ (ถ้ามี)<input id="slip-order" placeholder="ORD-XXXX"></label>
-          <div class="two">
-            <label>วันเวลาโอน<input id="slip-dt" type="datetime-local" required></label>
-            <label>แนบสลิป (ภาพ)<input id="slip-img" type="file" accept="image/*" capture="environment" required></label>
-          </div>
-          <div class="row" style="justify-content:space-between;margin-top:12px">
-            <a class="pill" href="#/">⬅︎ กลับหน้าร้าน</a>
-            <button class="btn primary" type="submit">แจ้งโอน</button>
-          </div>
-        </form>`
-      document.getElementById('notify-form')?.addEventListener('submit', async (e)=>{
-        e.preventDefault()
-        const email = document.getElementById('slip-email').value.trim()
-        const orderId = document.getElementById('slip-order').value.trim()
-        const dt = document.getElementById('slip-dt').value
-        const file = document.getElementById('slip-img').files?.[0]
-        if(!file){ alert('โปรดแนบสลิป'); return }
-        const dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file) })
-        const slip = { id: 'SLIP-'+Date.now().toString(36).toUpperCase(), email, orderId, dt, image: dataUrl, checked: false, createdAt: Date.now() }
-        const slips = readSlips(); slips.unshift(slip); writeSlips(slips)
-        alert('ส่งแจ้งโอนเรียบร้อย ขอบคุณค่ะ/ครับ'); location.hash = '#/'
-      })
-    }
-
-    // Email auto-send config (optional via EmailJS)
-    const emailCfgKey = 'mini-shop.emailcfg.v1'
-    const getEmailCfg = ()=> read(emailCfgKey,'null')
-    function renderEmailCfg(){
-      const cfg = getEmailCfg() || {}
-      const p=$('#em-public'), s=$('#em-service'), t=$('#em-template')
-      if(p) p.value = cfg.publicKey || ''
-      if(s) s.value = cfg.serviceId || ''
-      if(t) t.value = cfg.templateId || ''
-      const form = $('#emailcfg-form')
-      form?.addEventListener('submit', e=>{ e.preventDefault(); const cfg={ publicKey:$('#em-public').value.trim(), serviceId:$('#em-service').value.trim(), templateId:$('#em-template').value.trim() }; write(emailCfgKey,cfg); alert('บันทึกการตั้งค่าแล้ว') })
-      $('#btn-email-test')?.addEventListener('click', async ()=>{
-        const to = (read(sessionKey,'null')?.email)||'you@example.com'
-        await sendEmail(to,'ทดสอบส่งอีเมลจาก Mini Shop','สวัสดี นี่คือการทดสอบส่งอีเมลอัตโนมัติจาก Mini Shop')
-      })
-    }
-    async function loadEmailJS(publicKey){
-      if(window.emailjs){ try{ emailjs.init({publicKey}); }catch{} return }
-      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'; s.onload=()=>{ try{ emailjs.init({publicKey}); res() } catch(e){ res() } }; s.onerror=res; document.head.appendChild(s) })
-    }
-    async function sendEmail(to, subject, message){
-      const cfg = getEmailCfg();
-      if(cfg && cfg.publicKey && cfg.serviceId && cfg.templateId){
-        try{ await loadEmailJS(cfg.publicKey); await emailjs.send(cfg.serviceId, cfg.templateId, { to_email: to, subject, message }); alert('ส่งอีเมลอัตโนมัติแล้ว'); return true }catch(e){ console.error('emailjs error', e) }
-      }
-      const mailto = 'mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message)
-      window.open(mailto,'_blank'); return false
+  // ===== Clear all products =====
+  const btnClear=$('#btn-clear'); if(btnClear){ btnClear.addEventListener('click',()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList(); renderAdminList() } }) }
+  </script>
+</body>
+</html>
