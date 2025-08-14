@@ -237,18 +237,24 @@
     // YouTube helpers (thumb -> click -> iframe)
     function youtubeId(input){
       if(!input) return '';
-      const s = String(input).trim();
-      const m = s.match(/(?:youtu\.be\/|v=|shorts\/)([A-Za-z0-9_-]{6,})/);
+      const s = String(input).trim().replace(/[<>]/g,'');
+      // quick regex for common patterns
+      const m = s.match(/(?:youtu\.be\/|v=|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{6,})/);
       if(m) return m[1];
       try{
         const url = new URL(s.startsWith('http') ? s : ('https://'+s));
-        if(url.hostname.includes('youtu.be')) return url.pathname.replace(/^\//,'');
+        const host = url.hostname.replace(/^m\./,'').replace(/^www\./,'');
+        if(host.includes('youtu.be')) return url.pathname.split('/').filter(Boolean)[0]||'';
         if(url.searchParams.has('v')) return url.searchParams.get('v');
-        if(url.pathname.startsWith('/shorts/')) return url.pathname.split('/')[2];
+        const segs = url.pathname.split('/').filter(Boolean);
+        if(['shorts','live','embed'].includes(segs[0]) && segs[1]) return segs[1];
       }catch(_){ /* ignore */ }
       return '';
     }
     function youtubeThumb(url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
+    function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
+    
+    (url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
     function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
 
 
@@ -320,12 +326,9 @@
       const thumbs = images.map((src,ix)=>'<img data-ix="'+ix+'" src="'+src+'" class="'+(ix===0?'active':'')+'">').join('')
       const thumb = youtubeThumb(it.youtube)
       const embed = youtubeToEmbed(it.youtube)
-      const ytBlock = thumb ? (
-        '<div class="playthumb" id="ytwrap" style="margin-top:14px;position:relative">'+
-          '<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">'+
-          '<span class="playbtn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg></span>'+
-        '</div>'
-      ) : ''
+      const ytBlock = (thumb || embed) ? (
+        '<div class="playthumb" id="ytwrap" data-embed="'+(embed||'')+'" data-url="'+(it.youtube||'')+'" style="margin-top:14px;position:relative">'+
+          (thumb ? '<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">' : '<div class="embed16x9" style="display:grid;place-items:center" class="muted">คลิกเพื่อเปิดวิดีโอ</div
 
       box.innerHTML = '<div class="gallery">'+
         '<div class="main"><img id="main-cover" class="dvd" style="border-radius:16px;border:1px solid #24262e" src="'+(cover||'')+'" alt="'+it.name+'">'+
@@ -333,8 +336,7 @@
         '<div style="flex:1">'+
           '<h2 style="margin:0 0 10px">'+it.name+'</h2>'+
           '<div class="price" style="font-size:22px;margin-bottom:10px">฿'+Number(it.price).toLocaleString('th-TH')+'</div>'+
-          '<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+
-          ytBlock+
+          '<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+ ytBlock + ( (!thumb && it.youtube) ? ('<p style="margin-top:10px"><a class="pill" target="_blank" href="'+it.youtube+'">เปิดใน YouTube</a></p>') : '' ) +
           '<div style="display:flex;gap:10px;align-items:center;margin-top:14px">'+
             '<div class="qty"><button onclick="changeQty(-1)" type="button">-</button><input id="qty" type="number" min="1" value="1"><button onclick="changeQty(1)" type="button">+</button></div>'+
             '<button class="btn primary" onclick="addToCart(\''+it.id+'\', \''+it.slug+'\')" type="button">ใส่ตะกร้า</button>'+
@@ -747,50 +749,3 @@ Mini Shop`
       }
       const mailto = 'mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message)
       window.open(mailto,'_blank'); return false
-    }
-
-    // Admin: show slips
-    function renderAdminSlips(){
-      const wrap = document.getElementById('admin-slips'); if(!wrap) return
-      const slips = readSlips();
-      if(!Array.isArray(slips) || slips.length===0){ wrap.innerHTML = '<div class="empty">ยังไม่มีการแจ้งโอน</div>'; return }
-      let html = '<table class="table"><tr><th>เมื่อ</th><th>อีเมล</th><th>ออเดอร์</th><th>สลิป</th><th>สถานะ</th></tr>'
-      slips.forEach((s,i)=>{
-        const dt = new Date(s.createdAt||Date.now()).toLocaleString('th-TH')
-        html += '<tr>'+
-          '<td>'+dt+'</td>'+
-          '<td>'+s.email+'</td>'+
-          '<td>'+(s.orderId||'-')+'</td>'+
-          '<td><a class="pill" href="'+s.image+'" target="_blank">ดูสลิป</a></td>'+
-          '<td>'+(s.checked? 'เช็คแล้ว' : '<button class="btn" type="button" onclick="markSlip('+i+')">ทำเครื่องหมายว่าเช็คแล้ว</button>')+'</td>'+
-        '</tr>'
-      })
-      html += '</table>'
-      wrap.innerHTML = html
-    }
-    function markSlip(i){ const slips = readSlips(); if(!slips[i]) return; slips[i].checked = true; writeSlips(slips); renderAdminSlips() }
-
-    // go to checkout from cart & refresh admin list after clear
-    document.getElementById('btn-checkout')?.addEventListener('click', ()=>{ location.hash = '#/checkout' })
-    document.getElementById('btn-clear')?.addEventListener('click', ()=>{ setTimeout(()=>{ renderAdminList(); renderList() }, 100) })
-
-    // seed demo
-    (function(){
-      migrateDB()
-      let items = read(dbKey,'[]'); if(!Array.isArray(items)) items = []
-      if(items.length===0){
-        write(dbKey,[
-          {name:'ฟิล์ม 35mm – Color 200',price:289,desc:'โทนอุ่น ถ่ายกลางวันสวย',image:'',id:uid(),slug:slugify('ฟิล์ม 35mm – Color 200'),createdAt:Date.now()},
-          {name:'เลนส์ 50mm f/1.8 มือสอง',price:1990,desc:'สภาพดี โฟกัสลื่น',image:'',id:uid(),slug:slugify('เลนส์ 50mm f/1.8 มือสอง'),createdAt:Date.now()}
-        ])
-      }
-    })()
-
-    // boot
-    ensurePresetOwner();
-    updateCartCount();
-    route()
-
-  </script>
-</body>
-</html>
