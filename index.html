@@ -261,7 +261,7 @@
         if(!read(ownerKey,'null')){ location.hash = '#/setup'; return }
         if(!isAuthed()){ location.hash = '#/login'; return }
         $('#view-admin').classList.remove('hidden');
-        renderAdminList(); renderAdminSlips()
+        renderAdminList(); renderAdminSlips(); renderEmailCfg()
       }
       else if(base==='login'){ $('#view-login').classList.remove('hidden') }
       else if(base==='setup'){ $('#view-setup').classList.remove('hidden') }
@@ -448,7 +448,7 @@
       let html = '<table class="table"><tr><th>สินค้า</th><th>ราคา</th><th>เมื่อ</th><th></th></tr>'
       items.forEach((it,i)=>{
         const date = new Date(it.createdAt||Date.now()).toLocaleString('th-TH')
-        html += '<tr><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'">ดู</a> <button class="btn" type="button" onclick="adminEdit('+i+')">แก้ไข</button> <button class="btn" type="button" onclick="adminDelete('+i+')">ลบ</button></td></tr>'
+        html += '<tr style="cursor:pointer" onclick="adminEdit('+i+')"><td>'+it.name+'</td><td>'+THB(it.price)+'</td><td>'+date+'</td><td><a class="pill" href="#/product/'+it.slug+'" onclick="event.stopPropagation()">ดู</a> <button class="btn" type="button" onclick="event.stopPropagation(); adminEdit('+i+')">แก้ไข</button> <button class="btn" type="button" onclick="event.stopPropagation(); adminDelete('+i+')">ลบ</button></td></tr>'
       })
       html += '</table>'
       wrap.innerHTML = html
@@ -541,13 +541,13 @@
           const subject = 'วิธีชำระเงินสำหรับคำสั่งซื้อ '+orderId
           const body = bankEmailBody(order)
           const mailto = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)
-          window.open(mailto,'_blank')
+          sendEmail(email, subject, body)
           alert('เราได้เตรียมอีเมลชำระเงินให้คุณแล้ว โปรดแนบสลิปหลังโอน')
         }else{
           const subject = 'คำสั่งซื้อ '+orderId+' – ชำระผ่าน PayPal'
           const body = paypalEmailBody(order)
           const mailto = 'mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)
-          window.open(mailto,'_blank')
+          sendEmail(email, subject, body)
         }
 
         writeCart([]); updateCartCount()
@@ -649,6 +649,35 @@ Mini Shop`
         const slips = readSlips(); slips.unshift(slip); writeSlips(slips)
         alert('ส่งแจ้งโอนเรียบร้อย ขอบคุณค่ะ/ครับ'); location.hash = '#/'
       })
+    }
+
+    // Email auto-send config (optional via EmailJS)
+    const emailCfgKey = 'mini-shop.emailcfg.v1'
+    const getEmailCfg = ()=> read(emailCfgKey,'null')
+    function renderEmailCfg(){
+      const cfg = getEmailCfg() || {}
+      const p=$('#em-public'), s=$('#em-service'), t=$('#em-template')
+      if(p) p.value = cfg.publicKey || ''
+      if(s) s.value = cfg.serviceId || ''
+      if(t) t.value = cfg.templateId || ''
+      const form = $('#emailcfg-form')
+      form?.addEventListener('submit', e=>{ e.preventDefault(); const cfg={ publicKey:$('#em-public').value.trim(), serviceId:$('#em-service').value.trim(), templateId:$('#em-template').value.trim() }; write(emailCfgKey,cfg); alert('บันทึกการตั้งค่าแล้ว') })
+      $('#btn-email-test')?.addEventListener('click', async ()=>{
+        const to = (read(sessionKey,'null')?.email)||'you@example.com'
+        await sendEmail(to,'ทดสอบส่งอีเมลจาก Mini Shop','สวัสดี นี่คือการทดสอบส่งอีเมลอัตโนมัติจาก Mini Shop')
+      })
+    }
+    async function loadEmailJS(publicKey){
+      if(window.emailjs){ try{ emailjs.init({publicKey}); }catch{} return }
+      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'; s.onload=()=>{ try{ emailjs.init({publicKey}); res() } catch(e){ res() } }; s.onerror=res; document.head.appendChild(s) })
+    }
+    async function sendEmail(to, subject, message){
+      const cfg = getEmailCfg();
+      if(cfg && cfg.publicKey && cfg.serviceId && cfg.templateId){
+        try{ await loadEmailJS(cfg.publicKey); await emailjs.send(cfg.serviceId, cfg.templateId, { to_email: to, subject, message }); alert('ส่งอีเมลอัตโนมัติแล้ว'); return true }catch(e){ console.error('emailjs error', e) }
+      }
+      const mailto = 'mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(message)
+      window.open(mailto,'_blank'); return false
     }
 
     // Admin: show slips
