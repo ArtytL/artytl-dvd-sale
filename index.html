@@ -428,7 +428,7 @@
     }
     function cartRemove(i){ const cart = readCart(); cart.splice(i,1); writeCart(cart); renderCart(); updateCartCount() }
 
-    const btnClear = $('#btn-clear'); if(btnClear){ btnClear.addEventListener('click', ()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList() } }) }
+    const btnClear = $('#btn-clear'); if(btnClear){ btnClear.addEventListener('click', ()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList(); renderAdminList() } }) } }) }
 
     // === NEW: Orders/Checkout/Admin list helpers ===
     const ordersKey = 'mini-shop.orders.v1'
