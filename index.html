@@ -245,13 +245,12 @@
         if(url.hostname.includes('youtu.be')) return url.pathname.replace(/^\//,'');
         if(url.searchParams.has('v')) return url.searchParams.get('v');
         if(url.pathname.startsWith('/shorts/')) return url.pathname.split('/')[2];
-      }catch(_){ return '' }
+      }catch(_){ /* ignore */ }
       return '';
-    }catch(_){ return '' }
-      return ''
     }
     function youtubeThumb(url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
     function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
+
 
     function isAuthed(){
       const s = read(sessionKey,'null'); const o = read(ownerKey,'null');
