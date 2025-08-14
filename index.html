@@ -238,7 +238,7 @@
     function youtubeId(input){
       if(!input) return '';
       const s = String(input).trim().replace(/[<>]/g,'');
-      // quick regex for common patterns
+      // quick regex for most patterns
       const m = s.match(/(?:youtu\.be\/|v=|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{6,})/);
       if(m) return m[1];
       try{
@@ -253,10 +253,6 @@
     }
     function youtubeThumb(url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
     function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
-    
-    (url){ const id = youtubeId(url); return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '' }
-    function youtubeToEmbed(url){ const id = youtubeId(url); return id ? `https://www.youtube.com/embed/${id}` : '' }
-
 
     function isAuthed(){
       const s = read(sessionKey,'null'); const o = read(ownerKey,'null');
@@ -328,7 +324,10 @@
       const embed = youtubeToEmbed(it.youtube)
       const ytBlock = (thumb || embed) ? (
         '<div class="playthumb" id="ytwrap" data-embed="'+(embed||'')+'" data-url="'+(it.youtube||'')+'" style="margin-top:14px;position:relative">'+
-          (thumb ? '<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">' : '<div class="embed16x9" style="display:grid;place-items:center" class="muted">คลิกเพื่อเปิดวิดีโอ</div
+          (thumb ? '<img class="embed16x9" src="'+thumb+'" alt="youtube thumb">' : '<div class="embed16x9" style="display:grid;place-items:center" class="muted">คลิกเพื่อเปิดวิดีโอ</div>')+
+          '<span class="playbtn"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7L8 5z" fill="currentColor"/></svg></span>'+
+        '</div>'
+      ) : ''
 
       box.innerHTML = '<div class="gallery">'+
         '<div class="main"><img id="main-cover" class="dvd" style="border-radius:16px;border:1px solid #24262e" src="'+(cover||'')+'" alt="'+it.name+'">'+
@@ -357,12 +356,16 @@
         })
       })
 
-      if(thumb && embed){
-        const w = document.getElementById('ytwrap');
-        if(w){ w.addEventListener('click', ()=>{
-          w.classList.remove('playthumb')
-          w.innerHTML = '<iframe class="embed16x9" src="'+embed+'?autoplay=1&rel=0" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'
-        })}
+      const w = document.getElementById('ytwrap');
+      if(w){ w.addEventListener('click', ()=>{
+        const em = w.getAttribute('data-embed');
+        if(em){
+          w.classList.remove('playthumb');
+          w.innerHTML = '<iframe class="embed16x9" src="'+em+'?autoplay=1&rel=0" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'
+        } else {
+          const url = w.getAttribute('data-url'); if(url) window.open(url, '_blank')
+        }
+      }) })}
       }
     }
     function changeQty(delta){
