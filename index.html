@@ -119,7 +119,24 @@
   async function sha256(str){ const enc=new TextEncoder(); const buf=await crypto.subtle.digest('SHA-256',enc.encode(str)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('') }
 
   // ===== Seed demo (only if empty) =====
-  function seedDemo(){ try{ let items=read(dbKey,'[]'); if(!Array.isArray(items)||items.length===0){ write(dbKey,[{ id:uid(), name:'Rain Man', price:250, desc:'แผ่น DVD ตัวอย่างสำหรับทดสอบระบบ', youtube:'https://youtu.be/mlNwXuHUA8I', images:[], image:'', slug:slugify('Rain Man'), createdAt:Date.now() }]) } }catch(e){ console.warn('seed error', e) } }{ const enc=new TextEncoder(); const buf=await crypto.subtle.digest('SHA-256',enc.encode(str)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('') }
+  function seedDemo(){
+    try{
+      let items = read(dbKey,'[]');
+      if(!Array.isArray(items) || items.length===0){
+        write(dbKey,[{
+          id: uid(),
+          name: 'Rain Man',
+          price: 250,
+          desc: 'แผ่น DVD ตัวอย่างสำหรับทดสอบระบบ',
+          youtube: 'https://youtu.be/mlNwXuHUA8I',
+          images: [],
+          image: '',
+          slug: slugify('Rain Man'),
+          createdAt: Date.now()
+        }])
+      }
+    }catch(e){ console.warn('seed error', e) }
+  }
 
   // ===== YouTube helpers =====
   function youtubeId(input){ if(!input) return ''; const s=String(input).trim().replace(/[<>]/g,''); const m=s.match(/(?:youtu\.be\/|v=|shorts\/|live\/|embed\/)([A-Za-z0-9_-]{6,})/); if(m) return m[1]; try{ const url=new URL(s.startsWith('http')?s:('https://'+s)); const host=url.hostname.replace(/^m\./,'').replace(/^www\./,''); if(host.includes('youtu.be')) return url.pathname.split('/').filter(Boolean)[0]||''; if(url.searchParams.has('v')) return url.searchParams.get('v'); const segs=url.pathname.split('/').filter(Boolean); if(['shorts','live','embed'].includes(segs[0])&&segs[1]) return segs[1]; }catch{} return '' }
