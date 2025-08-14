@@ -1,50 +1,239 @@
-<script>
-  // ตรวจสอบสิทธิ์ Admin
-  const ADMIN_EMAILS = ["artyt.sun@gmail.com"];
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Shop – Email Login (Local only)</title>
+  <style>
+    :root{--bg:#0b0b0c;--card:#141417;--muted:#8b90a1;--text:#e9ecf1;--accent:#86e1ff;--accent2:#a1ffb2;--danger:#ff7a7a}
+    *{box-sizing:border-box}body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;background:linear-gradient(180deg,#0a0a0a,#111217 60%);color:var(--text)}
+    header{position:sticky;top:0;z-index:40;background:rgba(12,12,14,.65);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid #222}
+    .wrap{max-width:1000px;margin:0 auto;padding:18px 16px}.row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    a{color:var(--accent)}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#1c1d22;border:1px solid #2a2c35;color:#cbd5e1;text-decoration:none}
+    main{padding:28px 16px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card{background:var(--card);border:1px solid #21222a;border-radius:16px;overflow:hidden}
+    .card img{width:100%;height:180px;object-fit:cover;background:#0f1013}
+    .p{padding:12px 14px}.name{font-weight:700}.price{color:var(--accent2);font-weight:700}.muted{color:var(--muted)}
+    .btn{appearance:none;border:1px solid #2a2c35;background:#1c1d22;color:#e2e8f0;padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,#3aa6ff,#5bffb1);color:#0a0a0a;font-weight:800}
+    .btn.danger{background:#2a1515;color:#ffd6d6}
+    form{display:grid;gap:12px}input,textarea{width:100%;background:#0f1013;color:#e5e7eb;border:1px solid #24262e;border-radius:12px;padding:12px 14px}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .hidden{display:none!important}.empty{padding:40px;text-align:center;border:1px dashed #2e3240;border-radius:16px;background:#101117}
+    .center{max-width:520px;margin:0 auto}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+      <div class="row" style="gap:10px">
+        <strong>Mini Shop</strong>
+        <span class="muted">SPA + Email Login (LocalStorage)</span>
+      </div>
+      <nav class="row" style="gap:10px">
+        <a class="pill" href="#/">หน้าแรก</a>
+        <a class="pill" href="#/admin">Admin</a>
+        <span id="nav-session" class="muted"></span>
+        <button id="btn-logout" class="btn danger hidden" type="button">Logout</button>
+      </nav>
+    </div>
+  </header>
 
-  function checkAdmin(user) {
-    if (!user || !user.email) return false;
-    const email = user.email.toLowerCase().trim();
-    return ADMIN_EMAILS.includes(email);
-  }
+  <main class="wrap">
+    <!-- LIST -->
+    <section id="view-list" class="view">
+      <h2 style="margin:8px 0 16px">สินค้า</h2>
+      <div id="product-grid" class="grid"></div>
+      <div id="empty-list" class="empty hidden">ยังไม่มีสินค้า ลองเพิ่มใน <a href="#/admin">หน้า Admin</a></div>
+    </section>
 
-  // กดปุ่ม Admin
-  document.getElementById("adminButton").addEventListener("click", () => {
-    console.log("Admin button clicked");
-    if (checkAdmin(currentUser)) {
-      window.location.href = "admin.html";
-    } else {
-      alert("คุณไม่มีสิทธิ์เข้าหน้า Admin");
+    <!-- DETAIL -->
+    <section id="view-detail" class="view hidden"><div id="detail"></div></section>
+
+    <!-- LOGIN -->
+    <section id="view-login" class="view hidden center">
+      <h2>เข้าสู่ระบบ</h2>
+      <p class="muted">ข้อมูลล็อกอินเก็บที่เบราว์เซอร์ของคุณ เหมาะกับใช้งานส่วนตัวหรือทดลอง</p>
+      <form id="login-form">
+        <label>อีเมล<input id="login-email" type="email" required placeholder="you@example.com"></label>
+        <label>รหัสผ่าน<input id="login-pass" type="password" required placeholder="รหัสผ่านของคุณ"></label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn primary" type="submit">เข้าสู่ระบบ</button>
+          <a class="pill" href="#/setup">ตั้งค่าครั้งแรก</a>
+        </div>
+        <div id="login-msg" class="muted" style="color:var(--danger)"></div>
+      </form>
+    </section>
+
+    <!-- SETUP (first time) -->
+    <section id="view-setup" class="view hidden center">
+      <h2>ตั้งค่าเจ้าของร้านครั้งแรก</h2>
+      <p class="muted">จะบันทึกอีเมลและรหัสผ่านแบบแฮชพร้อมเกลือใน LocalStorage เครื่องนี้เท่านั้น</p>
+      <form id="setup-form">
+        <label>อีเมล<input id="setup-email" type="email" required placeholder="you@example.com"></label>
+        <div class="two">
+          <label>รหัสผ่าน<input id="setup-pass" type="password" required></label>
+          <label>ยืนยันรหัส<input id="setup-pass2" type="password" required></label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn primary" type="submit">บันทึกและเข้า Admin</button>
+          <a class="pill" href="#/login">กลับไปล็อกอิน</a>
+        </div>
+        <div id="setup-msg" style="color:var(--danger)"></div>
+      </form>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="view-admin" class="view hidden">
+      <h2>Admin – เพิ่ม/แก้ไขสินค้า</h2>
+      <form id="product-form">
+        <div class="two">
+          <label>ชื่อสินค้า<input id="f-name" required placeholder="เช่น ฟิล์มกล้อง 35mm"></label>
+          <label>ราคา (บาท)<input id="f-price" required type="number" min="0" step="1" placeholder="990"></label>
+        </div>
+        <label>คำอธิบาย<textarea id="f-desc" rows="4" placeholder="รายละเอียดสินค้า"></textarea></label>
+        <label>รูปภาพ<input id="f-img" type="file" accept="image/*"></label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn primary" type="submit">บันทึกสินค้า</button>
+          <button id="btn-clear" class="btn" type="button">ลบข้อมูลทั้งหมด</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="wrap muted">© 2025 Mini Shop – Local only</footer>
+
+  <script>
+    // keys
+    const dbKey = 'mini-shop.products.v1'
+    const ownerKey = 'mini-shop.owner.v1'
+    const sessionKey = 'mini-shop.session.v1'
+
+    // helpers
+    const $ = s => document.querySelector(s)
+    const $$ = s => Array.from(document.querySelectorAll(s))
+    const read = (k,d)=>{try{return JSON.parse(localStorage.getItem(k)||d)}catch{return JSON.parse(d)}}
+    const write = (k,v)=>localStorage.setItem(k, JSON.stringify(v))
+    const uid = ()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4)
+    const slugify = s => {
+      const t = (s||'').toString().toLowerCase().trim()
+      // เก็บ a-z 0-9 เว้นวรรค ขีด และช่วงอักษรไทย ก-ฮ โดยคร่าว ๆ
+      return t.replace(/[^a-z0-9ก-ฮ -]/g,'').replace(/ +/g,'-').replace(/-+/g,'-') || uid()
     }
-  });
 
-  // บันทึกสินค้า
-  async function saveProduct(productId, productData) {
-    try {
-      console.log("Saving product:", productId, productData);
-      await setDoc(doc(db, "products", productId), productData);
-      alert("บันทึกสำเร็จ");
-    } catch (error) {
-      console.error("Error saving product:", error);
-      alert("เกิดข้อผิดพลาดในการบันทึก");
+    async function sha256(str){
+      const enc = new TextEncoder()
+      const buf = await crypto.subtle.digest('SHA-256', enc.encode(str))
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')
     }
-  }
 
-  // ดึงข้อมูลสินค้า
-  async function loadProduct(productId) {
-    try {
-      console.log("Loading product:", productId);
-      const docSnap = await getDoc(doc(db, "products", productId));
-      if (docSnap.exists()) {
-        console.log("Product data:", docSnap.data());
-        return docSnap.data();
-      } else {
-        console.warn("ไม่พบสินค้า:", productId);
-        return null;
+    function isAuthed(){
+      const s = read(sessionKey,'null'); const o = read(ownerKey,'null');
+      return !!(s && o && s.email === o.email)
+    }
+
+    // routing
+    function route(){
+      const hash = location.hash || '#/'
+      const parts = hash.split('/')
+      const base = parts[1] || ''
+      $$('.view').forEach(v=>v.classList.add('hidden'))
+
+      const ns = $('#nav-session'); const btnLogout = $('#btn-logout')
+      if(isAuthed()){ ns.textContent = 'ล็อกอิน: ' + read(sessionKey,'null').email; btnLogout.classList.remove('hidden') } else { ns.textContent = ''; btnLogout.classList.add('hidden') }
+
+      if(!base){ renderList(); $('#view-list').classList.remove('hidden') }
+      else if(base==='product'){ renderDetail(parts[2]); $('#view-detail').classList.remove('hidden') }
+      else if(base==='admin'){
+        if(!read(ownerKey,'null')){ location.hash = '#/setup'; return }
+        if(!isAuthed()){ location.hash = '#/login'; return }
+        $('#view-admin').classList.remove('hidden')
       }
-    } catch (error) {
-      console.error("Error loading product:", error);
-      return null;
+      else if(base==='login'){ $('#view-login').classList.remove('hidden') }
+      else if(base==='setup'){ $('#view-setup').classList.remove('hidden') }
+      else { renderList(); $('#view-list').classList.remove('hidden') }
+      window.scrollTo({top:0, behavior:'instant'})
     }
-  }
-</script>
+    window.addEventListener('hashchange', route)
+
+    // list
+    function renderList(){
+      const grid = $('#product-grid'); const items = read(dbKey,'[]')
+      grid.innerHTML = ''
+      $('#empty-list').classList.toggle('hidden', items.length>0)
+      items.forEach(it=>{
+        const el = document.createElement('article'); el.className='card'
+        const img = document.createElement('img'); img.src = it.image || 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#0f1013"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="20">ไม่มีรูป</text></svg>')
+        const box = document.createElement('div'); box.className='p'
+        box.innerHTML = '<div class="name">'+it.name+'</div>'+
+          '<div class="row" style="justify-content:space-between;margin-top:6px">'+
+          '<span class="price">฿'+Number(it.price).toLocaleString('th-TH')+'</span>'+
+          '<a class="pill" href="#/product/'+it.slug+'">ดูรายละเอียด</a>'+
+          '</div>'
+        el.appendChild(img); el.appendChild(box); grid.appendChild(el)
+      })
+    }
+
+    // detail
+    function renderDetail(key){
+      const box = $('#detail'); const items = read(dbKey,'[]')
+      const it = items.find(x=>x.slug===key || x.id===key)
+      if(!it){ box.innerHTML = '<div class="empty">ไม่พบสินค้า <a href="#/">กลับหน้ารวม</a></div>'; return }
+      box.innerHTML = '<div class="row" style="gap:20px;align-items:flex-start">'+
+        '<img style="width:48%;max-height:420px;object-fit:cover;border-radius:16px;border:1px solid #24262e" src="'+(it.image||'')+'" alt="'+it.name+'">'+
+        '<div style="flex:1">'+
+          '<h2 style="margin:0 0 10px">'+it.name+'</h2>'+ 
+          '<div class="price" style="font-size:22px;margin-bottom:10px">฿'+Number(it.price).toLocaleString('th-TH')+'</div>'+ 
+          '<p class="muted" style="white-space:pre-wrap">'+(it.desc||'')+'</p>'+ 
+          '<div style="display:flex;gap:10px;margin-top:14px"><a href="#/" class="pill">⬅︎ กลับ</a></div>'+ 
+        '</div>'+ 
+      '</div>'
+    }
+
+    // auth ui
+    $('#btn-logout').addEventListener('click', ()=>{ localStorage.removeItem(sessionKey); alert('ออกจากระบบแล้ว'); route() })
+
+    const loginForm = $('#login-form'); if(loginForm){ loginForm.addEventListener('submit', async e=>{
+      e.preventDefault()
+      const email = $('#login-email').value.trim().toLowerCase()
+      const pass = $('#login-pass').value
+      const o = read(ownerKey,'null'); const msg = $('#login-msg'); msg.textContent = ''
+      if(!o){ msg.textContent = 'ยังไม่ได้ตั้งค่าเจ้าของร้าน ไปที่ ตั้งค่าครั้งแรก'; return }
+      const hash = await sha256(pass + o.salt)
+      if(email===o.email && hash===o.hash){ write(sessionKey,{email,at:Date.now()}); location.hash = '#/admin'; route() }
+      else { msg.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+    })}
+
+    const setupForm = $('#setup-form'); if(setupForm){ setupForm.addEventListener('submit', async e=>{
+      e.preventDefault()
+      const email = $('#setup-email').value.trim().toLowerCase(); const p1 = $('#setup-pass').value; const p2 = $('#setup-pass2').value
+      const msg = $('#setup-msg'); msg.textContent = ''
+      if(p1.length<6){ msg.textContent='รหัสผ่านควรยาวอย่างน้อย 6 ตัว'; return }
+      if(p1!==p2){ msg.textContent='รหัสผ่านไม่ตรงกัน'; return }
+      const salt = Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)
+      const hash = await sha256(p1 + salt)
+      write(ownerKey,{email,salt,hash}); write(sessionKey,{email,at:Date.now()})
+      alert('ตั้งค่าเสร็จและล็อกอินแล้ว'); location.hash = '#/admin'; route()
+    })}
+
+    // admin submit
+    const form = $('#product-form'); if(form){ form.addEventListener('submit', async e=>{
+      e.preventDefault()
+      if(!isAuthed()){ alert('โปรดล็อกอินก่อน'); location.hash = '#/login'; return }
+      const name = $('#f-name').value.trim(); const price = $('#f-price').value || 0; const desc = $('#f-desc').value.trim()
+      let dataUrl = ''
+      const f = $('#f-img'); if(f.files && f.files[0]){ dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f.files[0]) }) }
+      const item = {id: uid(), name, price, desc, image: dataUrl, slug: slugify(name), createdAt: Date.now()}
+      const items = read(dbKey,'[]'); items.unshift(item); write(dbKey, items)
+      form.reset(); alert('บันทึกสินค้าสำเร็จ'); location.hash = '#/product/'+item.slug; route()
+    })}
+
+    const btnClear = $('#btn-clear'); if(btnClear){ btnClear.addEventListener('click', ()=>{ if(confirm('ลบสินค้าทั้งหมด?')){ localStorage.removeItem(dbKey); renderList() } }) }
+
+    // seed demo
+    (function(){ const items = read(dbKey,'[]'); if(items.length===0){ write(dbKey,[{name:'ฟิล์ม 35mm – Color 200',price:289,desc:'โทนอุ่น ถ่ายกลางวันสวย',image:'',id:uid(),slug:slugify('ฟิล์ม 35mm – Color 200'),createdAt:Date.now()},{name:'เลนส์ 50mm f/1.8 มือสอง',price:1990,desc:'สภาพดี โฟกัสลื่น',image:'',id:uid(),slug:slugify('เลนส์ 50mm f/1.8 มือสอง'),createdAt:Date.now()}]) } })()
+
+    route()
+  </script>
+</body>
+</html>
