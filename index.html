@@ -140,7 +140,25 @@
     })
   }
 
-          }])
+          
+  }
+
+  // ===== Seed demo (only if empty) =====
+  function seedDemo(){
+    try{
+      let items = read(dbKey,'[]');
+      if(!Array.isArray(items) || items.length===0){
+        write(dbKey,[{
+          id: uid(),
+          name: 'Rain Man',
+          price: 250,
+          desc: 'แผ่น DVD ตัวอย่างสำหรับทดสอบระบบ',
+          youtube: 'https://youtu.be/mlNwXuHUA8I',
+          images: [],
+          image: '',
+          slug: slugify('Rain Man'),
+          createdAt: Date.now()
+        }]);
       }
     }catch(e){ console.warn('seed error', e) }
   }
