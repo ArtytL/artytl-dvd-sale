@@ -1,12 +1,6 @@
 {
   "name": "mini-shop-mail-api",
-  "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "node api/send-mail.js"
-  },
-  "dependencies": {
-    "nodemailer": "^6.9.8"
-  }
+  "type": "module",
+  "dependencies": { "nodemailer": "^6.9.12" }
 }
