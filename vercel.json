@@ -4,5 +4,8 @@
     "api/send-mail.js": {
       "runtime": "nodejs18.x"
     }
-  }
+  },
+  "routes": [
+    { "src": "/api/send-mail", "dest": "/api/send-mail.js" }
+  ]
 }
