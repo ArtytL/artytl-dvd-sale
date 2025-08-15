@@ -255,3 +255,63 @@
   </script>
 </body>
 </html>
+
+api/send-mail.js
+// Vercel Serverless Function for sending email via Gmail SMTP + App Password
+// Endpoint: POST /api/send-mail
+// Body JSON: { to: string, subject: string, message: string, bcc?: string }
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+
+  try {
+    const { to, subject, message, bcc } = req.body || {};
+
+    if (!to || !subject || !message) {
+      return res.status(400).json({ ok: false, error: 'Missing required fields: to, subject, message' });
+    }
+
+    // Lazy import to keep cold start small
+    const nodemailer = (await import('nodemailer')).default;
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_APP_PASSWORD, // 16-char App Password
+      },
+    });
+
+    const from = `Mini Shop <${process.env.MAIL_USER}>`;
+
+    await transporter.sendMail({ from, to, bcc, subject, text: message });
+
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('send-mail error:', e);
+    return res.status(500).json({ ok: false, error: String(e) });
+  }
+}
+      package.json
+      {
+  "name": "mini-shop-mail-api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "nodemailer": "^6.9.12"
+  }
+}
+      vercel.json
+      {
+  "version": 2,
+  "functions": {
+    "api/send-mail.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "routes": [
+    { "src": "/api/send-mail", "dest": "/api/send-mail.js" }
+  ]
+}
