@@ -62,7 +62,7 @@
   <header>
     <div class="wrap row">
       <div class="row" style="gap:10px">
-        <strong>Mini Shop</strong> <span class="badge">DEV r7</span>
+        <strong>Mini Shop</strong> <span class="badge">DEV r8</span>
         <span class="muted">SPA + Email Login (LocalStorage)</span>
       </div>
       <nav class="row" style="gap:10px">
@@ -71,7 +71,7 @@
         <a class="pill" href="#/notify">แจ้งโอน</a>
         <a id="nav-cart" class="pill" href="#/cart">ตะกร้า <span id="cart-count" class="badge">0</span></a>
         <span id="nav-session" class="muted"></span>
-        <button id="btn-logout" class="btn danger hidden" type="button">Logout<\/button>
+        <button id="btn-logout" class="btn danger hidden" type="button">Logout</button>
         <button id="btn-reset" class="btn" type="button">Reset</button>
       </nav>
     </div>
@@ -105,7 +105,7 @@
 
   // ===== Keys & owner preset =====
   const dbKey='mini-shop.products.v1', ownerKey='mini-shop.owner.v1', sessionKey='mini-shop.session.v1', cartKey='mini-shop.cart.v1', ordersKey='mini-shop.orders.v1', slipsKey='mini-shop.slips.v1'
-  const PRESET_OWNER={ email:'artyt.sun@gmaill.com', salt:'1fr4d49ubur3yvqzxtkgf52h', hash:'19aa0759484bbc20ad55380e1c1ebe26cf56acf73b4b92076e0ab5c1fc0f64c8' }
+  const PRESET_OWNER={ email:'artyt.sun@gmail.com', salt:'1fr4d49ubur3yvqzxtkgf52h', hash:'19aa0759484bbc20ad55380e1c1ebe26cf56acf73b4b92076e0ab5c1fc0f64c8' }
 
   // ===== Utils =====
   const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s))
@@ -138,9 +138,6 @@
       };
       reader.onerror=reject; reader.readAsDataURL(file);
     })
-  }
-
-          
   }
 
   // ===== Seed demo (only if empty) =====
