@@ -2,10 +2,7 @@
   "version": 2,
   "functions": {
     "api/send-mail.js": {
-      "runtime": "nodej"
+      "runtime": "nodejs18.x"
     }
-  },
-  "routes": [
-    { "src": "/api/send-mail", "dest": "/api/send-mail.js" }
-  ]
+  }
 }
