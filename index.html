@@ -1,34 +1,20 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DVD Shop</title>
-</head>
-<body>
-  <h1>สั่งซื้อสินค้า</h1>
-  <form id="order-form">
-    <input id="email" type="email" placeholder="อีเมลของคุณ" required />
-    <button type="submit">ยืนยันสั่งซื้อ</button>
-  </form>
-
-  <script>
-    document.getElementById("order-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      try {
-        const res = await fetch("/api/order-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "ส่งไม่สำเร็จ");
-        alert("ส่งอีเมลยืนยันแล้ว!");
-      } catch (err) {
-        alert("เกิดข้อผิดพลาด: " + err.message);
-      }
-    });
-  </script>
-</body>
-</html>
+<script>
+  const API_BASE = "https://arty-order-api.vercel.app"; // ← เปลี่ยนเป็นโดเมนจริงของโปรเจกต์ Vercel
+  document.getElementById("order-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    try {
+      const res = await fetch(`${API_BASE}/api/order-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const ct = res.headers.get("content-type") || "";
+      const json = ct.includes("application/json") ? await res.json() : null;
+      if (!res.ok) throw new Error((json && json.error) || `HTTP ${res.status}`);
+      alert("ส่งอีเมลยืนยันแล้ว!");
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err.message);
+    }
+  });
+</script>
