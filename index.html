@@ -1,30 +1,49 @@
-<script>
-  // โดเมน API ของเรา (Vercel)
-  const ENDPOINT = "https://artytl-dvd-sale.vercel.app/api/order-email";
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DVD Shop</title>
+</head>
+<body>
+  <h1>สั่งซื้อสินค้า</h1>
 
-  const form = document.getElementById("order-form");
-  const emailInput = document.getElementById("email");
+  <!-- ต้องมี id ตรงกับในสคริปต์ -->
+  <form id="order-form">
+    <input id="email" type="email" placeholder="อีเมลของคุณ" required />
+    <button type="submit">ยืนยันสั่งซื้อ</button>
+  </form>
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = (emailInput.value || "").trim();
-    if (!email) return alert("กรอกอีเมลก่อนน้า");
+  <!-- วางท้าย body เพื่อให้ DOM โหลดเสร็จก่อน -->
+  <script>
+    // โดเมน API บน Vercel (อันนี้ถูกแล้ว)
+    const ENDPOINT = "https://artytl-dvd-sale.vercel.app/api/order-email";
 
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",                                // 🔥 ระบุ POST ชัด ๆ
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })                // 🔥 ส่ง JSON ไป
-      });
+    const form = document.getElementById("order-form");
+    const emailInput = document.getElementById("email");
 
-      const txt = await res.text();                   // debug ได้ง่าย
-      let json; try { json = JSON.parse(txt); } catch {}
-      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = (emailInput.value || "").trim();
+      if (!email) return alert("กรอกอีเมลก่อนน้า");
 
-      alert("ส่งอีเมลยืนยันแล้ว!");
-    } catch (err) {
-      alert("เกิดข้อผิดพลาด: " + err.message);
-      console.error("fetch error:", err);
-    }
-  });
-</script>
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: "POST",                                // ✅ ต้องเป็น POST
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),               // ✅ ส่ง JSON ไป
+        });
+
+        const txt = await res.text();                    // debug ได้
+        let json; try { json = JSON.parse(txt); } catch {}
+        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+
+        alert("ส่งอีเมลยืนยันแล้ว!");
+      } catch (err) {
+        alert("เกิดข้อผิดพลาด: " + err.message);
+        console.error("fetch error:", err);
+      }
+    });
+  </script>
+</body>
+</html>
