@@ -1,35 +1,56 @@
-<script>
-  const form = document.getElementById("order-form");
-  const emailInput = document.getElementById("email");
-  const ENDPOINT = "/api/order-email"; // same-origin ชัวร์สุด
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DVD Shop</title>
+</head>
+<body>
+  <h1>สั่งซื้อสินค้า</h1>
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = (emailInput.value || "").trim();
+  <!-- ✅ ต้องมี id ตรงตามนี้ -->
+  <form id="order-form">
+    <input id="email" type="email" placeholder="อีเมลของคุณ" required />
+    <button type="submit">ยืนยันสั่งซื้อ</button>
+  </form>
 
-    if (!email) {
-      alert("กรอกอีเมลก่อนน้า");
-      return;
-    }
+  <!-- วางสคริปต์ท้าย body เพื่อให้ DOM พร้อมแน่นอน -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("order-form");
+      const emailInput = document.getElementById("email");
 
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      if (!form || !emailInput) {
+        console.error("ไม่เจอ #order-form หรือ #email ใน DOM");
+        return;
+      }
+
+      // หน้าเว็บรันบน vercel แล้ว => ยิง same-origin จะชัวร์สุด
+      const ENDPOINT = "/api/order-email";
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = (emailInput.value || "").trim();
+        if (!email) return alert("กรอกอีเมลก่อนน้า");
+
+        try {
+          const res = await fetch(ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+
+          const text = await res.text();
+          let json; try { json = JSON.parse(text); } catch {}
+          if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+
+          alert("ส่งอีเมลยืนยันแล้ว!");
+        } catch (err) {
+          console.error("Fetch error:", err);
+          alert("เกิดข้อผิดพลาด: " + err.message);
+        }
       });
-
-      // debug ให้เห็นชัด ๆ ใน Console
-      const text = await res.text();
-      console.log("POST", ENDPOINT, "->", res.status, text);
-
-      let json; try { json = JSON.parse(text); } catch {}
-      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
-
-      alert("ส่งอีเมลยืนยันแล้ว!");
-    } catch (err) {
-      console.error("Fetch error:", err);
-      alert("เกิดข้อผิดพลาด: " + err.message); // จะไม่ขึ้น Failed to fetch แบบกว้าง ๆ แล้ว
-    }
-  });
-</script>
+    });
+  </script>
+</body>
+</html>
