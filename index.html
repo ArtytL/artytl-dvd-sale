@@ -16,6 +16,44 @@
   </style>
 </head>
 <body>
+<section id="order">
+  <h2>สั่งซื้อสินค้า</h2>
+  <form id="order-form" style="display:flex;gap:8px;margin:12px 0">
+    <input id="email" type="email" placeholder="อีเมลของคุณ" required style="padding:8px 10px;min-width:260px" />
+    <button type="submit" style="padding:8px 12px">ยืนยันสั่งซื้อ</button>
+  </form>
+  <div id="msg" style="font-size:14px"></div>
+
+  <script>
+    const ENDPOINT = "https://artytl-dvd-sale.vercel.app/api/order-email";
+    const form = document.getElementById("order-form");
+    const email = document.getElementById("email");
+    const msg = document.getElementById("msg");
+    const btn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const value = (email.value || "").trim();
+      if (!value) return alert("กรอกอีเมลก่อนน้า");
+      const old = btn.textContent; btn.textContent="กำลังส่ง…"; btn.disabled=true; msg.textContent="กำลังส่งอีเมล…";
+      try {
+        const res = await fetch(ENDPOINT, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ email: value })
+        });
+        const txt = await res.text(); let json; try{ json = JSON.parse(txt) }catch{}
+        if(!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+        msg.textContent = "ส่งอีเมลยืนยันแล้ว!"; email.value=""; alert("ส่งอีเมลยืนยันแล้ว!");
+      } catch(err){
+        msg.textContent = "เกิดข้อผิดพลาด: " + err.message; alert("เกิดข้อผิดพลาด: " + err.message);
+      } finally {
+        btn.textContent = old; btn.disabled=false;
+      }
+    });
+  </script>
+</section>
+
   <h1>สั่งซื้อสินค้า</h1>
 
   <form id="order-form">
