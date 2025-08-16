@@ -1,20 +1,20 @@
 <script>
-  const API_BASE = "https://artytl-dvd-sale.vercel.app"; // ← เปลี่ยนเป็นโดเมนจริงของโปรเจกต์ Vercel
-  document.getElementById("order-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const API_BASE = "https://artytl-dvd-sale.vercel.app";
+
+  async function submitOrder() {
     const email = document.getElementById("email").value;
-    try {
-      const res = await fetch(`${API_BASE}/api/order-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const ct = res.headers.get("content-type") || "";
-      const json = ct.includes("application/json") ? await res.json() : null;
-      if (!res.ok) throw new Error((json && json.error) || `HTTP ${res.status}`);
-      alert("ส่งอีเมลยืนยันแล้ว!");
-    } catch (err) {
-      alert("เกิดข้อผิดพลาด: " + err.message);
+
+    const res = await fetch(`${API_BASE}/api/order-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("ส่งอีเมลเรียบร้อยแล้ว ✅");
+    } else {
+      alert("เกิดข้อผิดพลาด: " + data.error);
     }
-  });
+  }
 </script>
