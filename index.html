@@ -1,20 +1,66 @@
-<script>
-  const API_BASE = "https://artytl-dvd-sale.vercel.app";
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DVD Shop</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 24px; }
+    #status { margin-top: 12px; font-size: 14px; opacity: 0.9; white-space: pre-wrap; }
+    input, button { padding: 8px 12px; font-size: 14px; }
+    button { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>สั่งซื้อสินค้า</h1>
+  <form id="order-form">
+    <input id="email" type="email" placeholder="อีเมลของคุณ" required />
+    <button type="submit">ยืนยันสั่งซื้อ</button>
+  </form>
+  <div id="status"></div>
 
-  async function submitOrder() {
-    const email = document.getElementById("email").value;
+  <script>
+    // 👇 ใส่โดเมน Vercel ของโปรเจกต์ที่มีไฟล์ API จริง
+    // ถ้าไฟล์ API ของซันชื่อ "order-email.js" ให้ใช้ /api/order-email
+    // ถ้าใช้ "send-mail.js" ให้เปลี่ยนพาทเป็น /api/send-mail
+    const API_BASE = "https://artytl-dvd-sale.vercel.app";
+    const API_PATH = "/api/order-email"; // หรือ "/api/send-mail" ถ้าไฟล์นั้นมีอยู่จริง
 
-    const res = await fetch(`${API_BASE}/api/order-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+    const $form = document.getElementById("order-form");
+    const $status = document.getElementById("status");
+
+    function setStatus(msg) { $status.textContent = msg; }
+
+    $form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setStatus("⏳ กำลังส่งคำสั่งซื้อ...");
+
+      const email = document.getElementById("email").value;
+      try {
+        const endpoint = `${API_BASE}${API_PATH}`;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+
+        const ct = res.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) {
+          const raw = await res.text();
+          console.log("RAW RESPONSE:", raw);
+          throw new Error("API ส่งกลับมาไม่ใช่ JSON (เช็ค API_BASE/พาทให้ตรง)");
+        }
+        const json = await res.json();
+
+        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+        alert("ส่งอีเมลยืนยันแล้ว ✅");
+        setStatus("✅ สำเร็จ");
+      } catch (err) {
+        console.error(err);
+        setStatus("❌ " + (err?.message || "เกิดข้อผิดพลาด"));
+        alert("เกิดข้อผิดพลาด: " + (err?.message || "ไม่ทราบสาเหตุ"));
+      }
     });
-
-    const data = await res.json();
-    if (res.ok) {
-      alert("ส่งอีเมลเรียบร้อยแล้ว ✅");
-    } else {
-      alert("เกิดข้อผิดพลาด: " + data.error);
-    }
-  }
-</script>
+  </script>
+</body>
+</html>
