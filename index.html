@@ -16,7 +16,6 @@
   <!-- ใช้กับ GitHub Pages: ยิงไปโดเมน Vercel แบบ absolute URL -->
   <script>
     const ENDPOINT = "https://artytl-dvd-sale.vercel.app/api/order-email";
-
     const form = document.getElementById("order-form");
     const emailInput = document.getElementById("email");
 
@@ -25,22 +24,15 @@
       const email = (emailInput.value || "").trim();
       if (!email) return alert("กรอกอีเมลก่อนน้า");
 
-      try {
-        const res = await fetch(ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-
-        const txt = await res.text();
-        let json; try { json = JSON.parse(txt); } catch {}
-        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
-
-        alert("ส่งอีเมลยืนยันแล้ว!");
-      } catch (err) {
-        alert("เกิดข้อผิดพลาด: " + err.message);
-        console.error("fetch error:", err);
-      }
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const txt = await res.text();
+      let json; try { json = JSON.parse(txt) } catch {}
+      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+      alert("ส่งอีเมลยืนยันแล้ว!");
     });
   </script>
 </body>
