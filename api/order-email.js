@@ -1,4 +1,8 @@
 import nodemailer from "nodemailer";
+const ALLOW_ORIGINS = [
+  "https://artytl.github.io",     // ของเดิม
+  "https://YOURDOMAIN.com"        // 👈 ใส่โดเมนเว็บหลัก ถ้ามี
+];
 
 const ALLOW_ORIGINS = [
   "https://artytl.github.io" // ✅ GitHub Pages ของซัน (origin ไม่ต้องใส่ path)
