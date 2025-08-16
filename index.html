@@ -20,47 +20,24 @@
   <div id="status"></div>
 
   <script>
-    // 👇 ใส่โดเมน Vercel ของโปรเจกต์ที่มีไฟล์ API จริง
-    // ถ้าไฟล์ API ของซันชื่อ "order-email.js" ให้ใช้ /api/order-email
-    // ถ้าใช้ "send-mail.js" ให้เปลี่ยนพาทเป็น /api/send-mail
-    const API_BASE = "https://arty1l-dvd-sale.vercel.app";
-    const API_PATH = "/api/order-email"; // หรือ "/api/send-mail" ถ้าไฟล์นั้นมีอยู่จริง
-
-    const $form = document.getElementById("order-form");
-    const $status = document.getElementById("status");
-
-    function setStatus(msg) { $status.textContent = msg; }
-
-    $form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      setStatus("⏳ กำลังส่งคำสั่งซื้อ...");
-
-      const email = document.getElementById("email").value;
-      try {
-        const endpoint = `${API_BASE}${API_PATH}`;
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-
-        const ct = res.headers.get("content-type") || "";
-        if (!ct.includes("application/json")) {
-          const raw = await res.text();
-          console.log("RAW RESPONSE:", raw);
-          throw new Error("API ส่งกลับมาไม่ใช่ JSON (เช็ค API_BASE/พาทให้ตรง)");
-        }
-        const json = await res.json();
-
-        if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
-        alert("ส่งอีเมลยืนยันแล้ว ✅");
-        setStatus("✅ สำเร็จ");
-      } catch (err) {
-        console.error(err);
-        setStatus("❌ " + (err?.message || "เกิดข้อผิดพลาด"));
-        alert("เกิดข้อผิดพลาด: " + (err?.message || "ไม่ทราบสาเหตุ"));
-      }
-    });
-  </script>
+  const API_BASE = "https://dvd-shop-api.vercel.app"; // ← โดเมนโปรเจกต์ API จริงของซัน
+  document.getElementById("order-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    try {
+      const res = await fetch(`${API_BASE}/api/order-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const ct = res.headers.get("content-type") || "";
+      const json = ct.includes("application/json") ? await res.json() : null;
+      if (!res.ok) throw new Error((json && json.error) || `HTTP ${res.status}`);
+      alert("ส่งอีเมลยืนยันแล้ว!");
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err.message);
+    }
+  });
+</script>
 </body>
 </html>
