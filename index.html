@@ -1,56 +1,30 @@
-<!doctype html>
-<html lang="th">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DVD Shop</title>
-</head>
-<body>
-  <h1>สั่งซื้อสินค้า</h1>
+<script>
+  // โดเมน API ของเรา (Vercel)
+  const ENDPOINT = "https://artytl-dvd-sale.vercel.app/api/order-email";
 
-  <!-- ✅ ต้องมี id ตรงตามนี้ -->
-  <form id="order-form">
-    <input id="email" type="email" placeholder="อีเมลของคุณ" required />
-    <button type="submit">ยืนยันสั่งซื้อ</button>
-  </form>
+  const form = document.getElementById("order-form");
+  const emailInput = document.getElementById("email");
 
-  <!-- วางสคริปต์ท้าย body เพื่อให้ DOM พร้อมแน่นอน -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("order-form");
-      const emailInput = document.getElementById("email");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = (emailInput.value || "").trim();
+    if (!email) return alert("กรอกอีเมลก่อนน้า");
 
-      if (!form || !emailInput) {
-        console.error("ไม่เจอ #order-form หรือ #email ใน DOM");
-        return;
-      }
-
-      // หน้าเว็บรันบน vercel แล้ว => ยิง same-origin จะชัวร์สุด
-      const ENDPOINT = "/api/order-email";
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = (emailInput.value || "").trim();
-        if (!email) return alert("กรอกอีเมลก่อนน้า");
-
-        try {
-          const res = await fetch(ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email }),
-          });
-
-          const text = await res.text();
-          let json; try { json = JSON.parse(text); } catch {}
-          if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
-
-          alert("ส่งอีเมลยืนยันแล้ว!");
-        } catch (err) {
-          console.error("Fetch error:", err);
-          alert("เกิดข้อผิดพลาด: " + err.message);
-        }
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",                                // 🔥 ระบุ POST ชัด ๆ
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })                // 🔥 ส่ง JSON ไป
       });
-    });
-  </script>
-</body>
-</html>
+
+      const txt = await res.text();                   // debug ได้ง่าย
+      let json; try { json = JSON.parse(txt); } catch {}
+      if (!res.ok) throw new Error(json?.error || `HTTP ${res.status}`);
+
+      alert("ส่งอีเมลยืนยันแล้ว!");
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err.message);
+      console.error("fetch error:", err);
+    }
+  });
+</script>
