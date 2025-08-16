@@ -1,7 +1,5 @@
 {
-  "name": "dvd-sale",
+  "name": "dvd-shop-api",
   "version": "1.0.0",
-  "dependencies": {
-    "nodemailer": "^6.9.8"
-  }
+  "dependencies": { "nodemailer": "^6.9.8" }
 }
